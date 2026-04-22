@@ -932,48 +932,8 @@
 <body>
 <div class="shell">
 
-  <!-- ── Sidebar ── -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-title">The Foundation Room</div>
-      <div class="brand-sub">Instructor Portal</div>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="/instructor-dashboard.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-        Dashboard
-      </a>
-      <a href="/student-course-catalog.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        My Courses
-      </a>
-      <a href="/course-manager.html" class="nav-item active">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Course Manager
-      </a>
-      <a href="/student-sheet-music.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        Sheet Music
-      </a>
-      <a href="/student-archive.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-        Archive
-      </a>
-      <a href="/admin-panel.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
-        Admin Panel
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user" onclick="handleLogout()">
-        <div class="sidebar-avatar" id="sb-avatar">EV</div>
-        <div class="sidebar-user-info">
-          <div class="user-name" id="sb-name">Elias Vance</div>
-          <div class="user-role">Instructor</div>
-        </div>
-      </div>
-    </div>
-  </aside>
+  <!-- ── Sidebar (role-aware — rendered by sidebar-loader.js) ── -->
+  <aside class="sidebar" id="sidebar"></aside>
 
   <!-- ── Main ── -->
   <div class="main-wrap">
@@ -1275,6 +1235,7 @@
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/auth-guard.js"></script>
 <script>requireRole(['instructor','admin']);</script>
+<script src="/assets/js/sidebar-loader.js"></script>
 <script>
   // ── GSAP init ──
   gsap.registerPlugin(ScrollTrigger);

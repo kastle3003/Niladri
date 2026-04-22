@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Profile — The Foundation Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/archive.css">
+  <style>
+    .profile-layout { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
+
+    /* ── Profile sidebar card ── */
+    .profile-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(200,168,75,0.12);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: border-color .2s;
+    }
+    .profile-card:hover { border-color: rgba(200,168,75,0.25); }
+
+    /* ── Avatar ── */
+    .avatar-upload {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: linear-gradient(135deg, #1a0d00, #2d1f00);
+      border: 2px solid rgba(200,168,75,0.35);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--serif); font-size: 32px; font-weight: 600;
+      color: var(--gold);
+      margin: 0 auto 16px; cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .avatar-upload:hover { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(200,168,75,0.1); }
+    .avatar-upload img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+    .avatar-upload-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .2s; border-radius: 50%;
+    }
+    .avatar-upload:hover .avatar-upload-overlay { opacity: 1; }
+
+    /* ── Name & meta ── */
+    .profile-name {
+      font-family: var(--serif); font-style: italic;
+      font-size: 22px; font-weight: 600;
+      color: var(--text); text-align: center; margin-bottom: 4px;
+    }
+    .member-since { font-size: 12px; color: var(--text-3); text-align: center; margin-top: 4px; }
+    .profile-role-badge { display: flex; justify-content: center; margin-bottom: 16px; }
+
+    /* ── Stats row ── */
+    .profile-stat-row {
+      display: flex; flex-direction: column; gap: 10px;
+      margin-top: 20px; border-top: 1px solid rgba(200,168,75,0.1); padding-top: 20px;
+    }
+    .profile-stat { display: flex; justify-content: space-between; align-items: center; }
+    .profile-stat-label { font-size: 12px; color: var(--text-3); }
+    .profile-stat-val {
+      font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--gold);
+    }
+
+    /* ── Tab bar ── */
+    .prof-tabs {
+      display: flex; gap: 4px; margin-bottom: 24px;
+      background: var(--bg-2); border-radius: var(--radius); padding: 4px;
+      width: fit-content; border: 1px solid rgba(200,168,75,0.08);
+    }
+    .prof-tab {
+      padding: 8px 20px; border-radius: 6px;
+      font-size: 13px; font-weight: 500; color: var(--text-3);
+      cursor: pointer; transition: all .18s;
+    }
+    .prof-tab.active {
+      background: var(--bg-elevated); color: var(--gold);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.4);
+    }
+    .prof-tab:hover:not(.active) { color: var(--text-2); background: rgba(200,168,75,0.04); }
+    .prof-tab-panel { display: none; }
+    .prof-tab-panel.active { display: block; }
+
+    /* ── Password strength ── */
+    .strength-bar {
+      height: 4px; border-radius: 99px;
+      background: var(--bg-elevated); margin-top: 6px; overflow: hidden;
+    }
+    .strength-fill { height: 100%; border-radius: 99px; transition: width .3s, background .3s; }
+
+    /* ── Toggle switches ── */
+    .toggle-wrap {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0; border-bottom: 1px solid rgba(200,168,75,0.08);
+    }
+    .toggle-wrap:last-child { border-bottom: none; }
+    .toggle-label { font-size: 14px; color: var(--text); }
+    .toggle-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: var(--bg-elevated); border: 1px solid rgba(200,168,75,0.15);
+      border-radius: 99px; transition: background .2s; cursor: pointer;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--text-3); top: 2px; left: 2px;
+      transition: transform .2s, background .2s;
+    }
+    .toggle input:checked + .toggle-slider { background: rgba(200,168,75,0.2); border-color: var(--gold); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: var(--gold); }
+
+    /* ── Practice slider ── */
+    input[type=range] { accent-color: var(--gold); }
+    #practice-display { color: var(--gold); font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <!-- Main -->
+  <div class="main-wrap">
+    <header class="topbar">
+      <div class="topbar-title">My Profile</div>
+      <div class="topbar-actions">
+        <a href="/admin-notifications.html" class="icon-btn" title="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge-dot" id="notif-dot" style="display:none;"></span>
+        </a>
+        <div class="topbar-avatar" id="topbar-avatar">—</div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="profile-layout">
+        <!-- Left column -->
+        <div>
+          <div class="profile-card" style="text-align:center;">
+            <div class="avatar-upload" id="avatar-circle" onclick="document.getElementById('avatar-input').click()">
+              <span id="avatar-initials">—</span>
+              <img id="avatar-img" src="" style="display:none;">
+              <div class="avatar-upload-overlay">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+            </div>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none;" onchange="uploadAvatar(this)">
+            <div class="profile-name" id="profile-name">—</div>
+            <div class="member-since" id="member-since"></div>
+            <div class="profile-role-badge" style="margin-top:8px;">
+              <span class="badge badge-green" id="role-badge">Student</span>
+            </div>
+            <div style="font-size:13px;color:var(--text-light);" id="profile-instrument"></div>
+            <div class="profile-stat-row">
+              <div class="profile-stat">
+                <span class="profile-stat-label">Courses Enrolled</span>
+                <span class="profile-stat-val" id="stat-courses">—</span>
+              </div>
+              <div class="profile-stat">
+                <span class="profile-stat-label">Assignments Completed</span>
+                <span class="profile-stat-val" id="stat-assignments">—</span>
+              </div>
+              <div class="profile-stat">
+                <span class="profile-stat-label">Practice Goal</span>
+                <span class="profile-stat-val" id="stat-practice">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="profile-card">
+          <div class="prof-tabs">
+            <div class="prof-tab active" onclick="switchTab('info')">Personal Info</div>
+            <div class="prof-tab" onclick="switchTab('security')">Security</div>
+            <div class="prof-tab" onclick="switchTab('prefs')">Preferences</div>
+          </div>
+
+          <!-- Personal Info -->
+          <div id="tab-info" class="prof-tab-panel active">
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input class="form-input" id="first_name" placeholder="First name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input class="form-input" id="last_name" placeholder="Last name">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input class="form-input" id="email" readonly style="opacity:0.6;cursor:not-allowed;">
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input class="form-input" id="phone" placeholder="+1 (555) 000-0000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Location</label>
+                <input class="form-input" id="location" placeholder="City, Country">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bio</label>
+              <textarea class="form-textarea" id="bio" placeholder="Tell us about yourself and your musical journey…"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Primary Instrument</label>
+              <select class="form-select" id="instrument">
+                <option value="">Select instrument…</option>
+                <option>Cello</option>
+                <option>Violin</option>
+                <option>Viola</option>
+                <option>Double Bass</option>
+                <option>Piano</option>
+                <option>Guitar</option>
+                <option>Voice</option>
+                <option>Flute</option>
+                <option>Clarinet</option>
+                <option>Trumpet</option>
+                <option>All Instruments</option>
+              </select>
+            </div>
+            <div class="card-label" style="margin-top:4px;">Social Links</div>
+            <div class="form-group">
+              <label class="form-label">Website</label>
+              <input class="form-input" id="social-website" placeholder="https://yoursite.com">
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">YouTube</label>
+                <input class="form-input" id="social-youtube" placeholder="youtube.com/…">
+              </div>
+              <div class="form-group">
+                <label class="form-label">SoundCloud</label>
+                <input class="form-input" id="social-soundcloud" placeholder="soundcloud.com/…">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Spotify</label>
+                <input class="form-input" id="social-spotify" placeholder="open.spotify.com/artist/…">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Apple Music</label>
+                <input class="form-input" id="social-applemusic" placeholder="music.apple.com/…">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Instagram</label>
+                <input class="form-input" id="social-instagram" placeholder="@handle">
+              </div>
+              <div class="form-group">
+                <label class="form-label">TikTok</label>
+                <input class="form-input" id="social-tiktok" placeholder="@handle">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Twitter / X</label>
+                <input class="form-input" id="social-twitter" placeholder="@handle">
+              </div>
+              <div class="form-group">
+                <label class="form-label">LinkedIn</label>
+                <input class="form-input" id="social-linkedin" placeholder="linkedin.com/in/…">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Facebook</label>
+                <input class="form-input" id="social-facebook" placeholder="facebook.com/…">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Bandcamp</label>
+                <input class="form-input" id="social-bandcamp" placeholder="artist.bandcamp.com">
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+          </div>
+
+          <!-- Security -->
+          <div id="tab-security" class="prof-tab-panel">
+            <div style="max-width:480px;">
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input class="form-input" type="password" id="cur-pass" placeholder="Current password">
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input class="form-input" type="password" id="new-pass" placeholder="New password" oninput="checkStrength()">
+                <div class="strength-bar"><div class="strength-fill" id="strength-fill" style="width:0%;background:var(--crimson);"></div></div>
+                <div style="font-size:11px;color:var(--text-light);margin-top:4px;" id="strength-label"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input class="form-input" type="password" id="conf-pass" placeholder="Confirm new password">
+              </div>
+              <button class="btn btn-primary" onclick="changePassword()">Change Password</button>
+            </div>
+          </div>
+
+          <!-- Preferences -->
+          <div id="tab-prefs" class="prof-tab-panel">
+            <div class="form-group">
+              <label class="form-label">
+                Daily Practice Goal: <span id="practice-display" style="color:var(--crimson);font-weight:700;">60 min</span>
+              </label>
+              <input type="range" min="15" max="240" step="15" value="60" id="practice-slider"
+                style="width:100%;accent-color:var(--crimson);"
+                oninput="updatePracticeDisplay(this.value)">
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);margin-top:4px;">
+                <span>15 min</span><span>4 hours</span>
+              </div>
+            </div>
+            <div style="margin-top:8px;">
+              <div class="card-label">Notification Preferences</div>
+              <div class="toggle-wrap">
+                <div><div class="toggle-label">Email Notifications</div><div class="toggle-sub">Receive emails for important updates</div></div>
+                <label class="toggle"><input type="checkbox" id="pref-email" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-wrap">
+                <div><div class="toggle-label">In-App Notifications</div><div class="toggle-sub">Show notifications in the app</div></div>
+                <label class="toggle"><input type="checkbox" id="pref-inapp" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-wrap">
+                <div><div class="toggle-label">Assignment Graded</div><div class="toggle-sub">Notify when your work is graded</div></div>
+                <label class="toggle"><input type="checkbox" id="pref-graded" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-wrap">
+                <div><div class="toggle-label">New Messages</div><div class="toggle-sub">Notify when you receive a message</div></div>
+                <label class="toggle"><input type="checkbox" id="pref-messages" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-wrap">
+                <div><div class="toggle-label">Masterclass Reminders</div><div class="toggle-sub">Reminders for upcoming masterclasses</div></div>
+                <label class="toggle"><input type="checkbox" id="pref-masterclass" checked><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:20px;" onclick="savePreferences()">Save Preferences</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="/assets/js/api.js?v=2"></script>
+<script src="/assets/js/auth-guard.js?v=2"></script>
+<script>requireRole(['admin']);</script>
+<script src="/assets/js/admin-sidebar.js?v=2"></script>
+<script>
+  function toast(msg, type='success') {
+    const tc = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast ${type === 'error' ? 'error' : ''}`;
+    t.textContent = msg;
+    tc.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('archive_token');
+    localStorage.removeItem('archive_user');
+    window.location.href = '/index.html';
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.prof-tab').forEach((el, i) => {
+      el.classList.toggle('active', ['info','security','prefs'][i] === tab);
+    });
+    document.querySelectorAll('.prof-tab-panel').forEach(el => el.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+  }
+
+  function updatePracticeDisplay(val) {
+    val = parseInt(val);
+    const h = Math.floor(val / 60);
+    const m = val % 60;
+    const label = h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m} min`;
+    document.getElementById('practice-display').textContent = label;
+  }
+
+  function checkStrength() {
+    const pw = document.getElementById('new-pass').value;
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    const pct = (score / 4) * 100;
+    const fill = document.getElementById('strength-fill');
+    const label = document.getElementById('strength-label');
+    const colors = ['var(--crimson)', 'var(--crimson)', 'var(--gold-dark)', 'var(--forest)'];
+    const labels = ['Weak', 'Fair', 'Good', 'Strong'];
+    fill.style.width = pct + '%';
+    fill.style.background = colors[score - 1] || 'var(--parchment-dark)';
+    label.textContent = pw.length ? labels[score - 1] || '' : '';
+  }
+
+  document.addEventListener('userLoaded', async () => {
+    try {
+      const data = await api.get('/api/profile');
+      const u = data.user;
+      populateProfile(u);
+      // Load stats
+      loadStats();
+    } catch {
+      toast('Could not load profile', 'error');
+    }
+    try {
+      const nc = await api.get('/api/notifications/unread-count');
+      if (nc.count > 0) {
+        const notifDot = document.getElementById('notif-dot');
+        if (notifDot) notifDot.style.display = 'block';
+      }
+    } catch {}
+  });
+
+  function populateProfile(u) {
+    const initials = u.avatar_initials || ((u.first_name || '')[0] + (u.last_name || '')[0]);
+    document.getElementById('topbar-avatar').textContent = initials;
+    document.getElementById('avatar-initials').textContent = initials;
+    if (u.avatar_url) {
+      const img = document.getElementById('avatar-img');
+      img.src = u.avatar_url;
+      img.style.display = 'block';
+    }
+    document.getElementById('profile-name').textContent = `${u.first_name} ${u.last_name}`;
+    document.getElementById('member-since').textContent = u.created_at ? 'Member since ' + new Date(u.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '';
+    document.getElementById('role-badge').textContent = u.role.charAt(0).toUpperCase() + u.role.slice(1);
+    document.getElementById('profile-instrument').textContent = u.instrument || '';
+
+    // Form fields
+    document.getElementById('first_name').value = u.first_name || '';
+    document.getElementById('last_name').value = u.last_name || '';
+    document.getElementById('email').value = u.email || '';
+    document.getElementById('phone').value = u.phone || '';
+    document.getElementById('location').value = u.location || '';
+    document.getElementById('bio').value = u.bio || '';
+    document.getElementById('instrument').value = u.instrument || '';
+
+    const sl = u.social_links || {};
+    document.getElementById('social-website').value = sl.website || '';
+    document.getElementById('social-youtube').value = sl.youtube || '';
+    document.getElementById('social-soundcloud').value = sl.soundcloud || '';
+    document.getElementById('social-spotify').value = sl.spotify || '';
+    document.getElementById('social-applemusic').value = sl.applemusic || '';
+    document.getElementById('social-instagram').value = sl.instagram || '';
+    document.getElementById('social-tiktok').value = sl.tiktok || '';
+    document.getElementById('social-twitter').value = sl.twitter || '';
+    document.getElementById('social-linkedin').value = sl.linkedin || '';
+    document.getElementById('social-facebook').value = sl.facebook || '';
+    document.getElementById('social-bandcamp').value = sl.bandcamp || '';
+
+    const goalMins = u.practice_goal_minutes || 60;
+    document.getElementById('practice-slider').value = goalMins;
+    updatePracticeDisplay(goalMins);
+    document.getElementById('stat-practice').textContent = goalMins >= 60 ? `${Math.floor(goalMins/60)}h ${goalMins%60 ? goalMins%60+'m' : ''}`.trim() : goalMins + ' min';
+
+    const np = u.notification_prefs || {};
+    document.getElementById('pref-email').checked = np.email !== false;
+    document.getElementById('pref-inapp').checked = np.inapp !== false;
+    document.getElementById('pref-graded').checked = np.graded !== false;
+    document.getElementById('pref-messages').checked = np.messages !== false;
+    document.getElementById('pref-masterclass').checked = np.masterclass !== false;
+  }
+
+  async function loadStats() {
+    try {
+      const data = await api.get('/api/enrollments');
+      document.getElementById('stat-courses').textContent = (data.enrollments || []).length;
+    } catch { document.getElementById('stat-courses').textContent = '—'; }
+    try {
+      const data = await api.get('/api/submissions/me');
+      const graded = (data.submissions || []).filter(s => s.status === 'graded').length;
+      document.getElementById('stat-assignments').textContent = graded;
+    } catch { document.getElementById('stat-assignments').textContent = '—'; }
+  }
+
+  async function saveProfile() {
+    try {
+      const body = {
+        first_name: document.getElementById('first_name').value,
+        last_name: document.getElementById('last_name').value,
+        bio: document.getElementById('bio').value,
+        phone: document.getElementById('phone').value,
+        location: document.getElementById('location').value,
+        instrument: document.getElementById('instrument').value,
+        social_links: {
+          website: document.getElementById('social-website').value,
+          youtube: document.getElementById('social-youtube').value,
+          soundcloud: document.getElementById('social-soundcloud').value,
+          spotify: document.getElementById('social-spotify').value,
+          applemusic: document.getElementById('social-applemusic').value,
+          instagram: document.getElementById('social-instagram').value,
+          tiktok: document.getElementById('social-tiktok').value,
+          twitter: document.getElementById('social-twitter').value,
+          linkedin: document.getElementById('social-linkedin').value,
+          facebook: document.getElementById('social-facebook').value,
+          bandcamp: document.getElementById('social-bandcamp').value
+        }
+      };
+      const data = await api.put('/api/profile', body);
+      populateProfile(data.user);
+      toast('Profile saved!');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  async function savePreferences() {
+    try {
+      const body = {
+        practice_goal_minutes: parseInt(document.getElementById('practice-slider').value),
+        notification_prefs: {
+          email: document.getElementById('pref-email').checked,
+          inapp: document.getElementById('pref-inapp').checked,
+          graded: document.getElementById('pref-graded').checked,
+          messages: document.getElementById('pref-messages').checked,
+          masterclass: document.getElementById('pref-masterclass').checked
+        }
+      };
+      await api.put('/api/profile', body);
+      toast('Preferences saved!');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  async function changePassword() {
+    const cur = document.getElementById('cur-pass').value;
+    const nw = document.getElementById('new-pass').value;
+    const conf = document.getElementById('conf-pass').value;
+    if (!cur || !nw || !conf) { toast('All fields are required', 'error'); return; }
+    if (nw !== conf) { toast('Passwords do not match', 'error'); return; }
+    if (nw.length < 8) { toast('Password must be at least 8 characters', 'error'); return; }
+    try {
+      await api.put('/api/profile/password', { current_password: cur, new_password: nw });
+      document.getElementById('cur-pass').value = '';
+      document.getElementById('new-pass').value = '';
+      document.getElementById('conf-pass').value = '';
+      document.getElementById('strength-fill').style.width = '0%';
+      document.getElementById('strength-label').textContent = '';
+      toast('Password changed!');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  async function uploadAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    const fd = new FormData();
+    fd.append('avatar', input.files[0]);
+    try {
+      const data = await api.upload('/api/profile/avatar', fd);
+      const img = document.getElementById('avatar-img');
+      img.src = data.avatar_url + '?t=' + Date.now();
+      img.style.display = 'block';
+      document.getElementById('avatar-initials').style.display = 'none';
+      toast('Avatar updated!');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// Page entrance
+const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+tl.from('.page-header', { y: -20, opacity: 0, duration: 0.5 })
+  .from('.profile-card', { x: -28, opacity: 0, duration: 0.6 }, '-=0.25')
+  .from('.prof-tabs', { y: 16, opacity: 0, duration: 0.5 }, '-=0.4')
+  .from('.tab-panel.active > *', { y: 20, opacity: 0, duration: 0.45, stagger: 0.07 }, '-=0.3');
+
+// Avatar pulse glow on load
+gsap.to('.avatar-upload', {
+  boxShadow: '0 0 24px rgba(200,168,75,0.25)',
+  duration: 1.2,
+  repeat: 1,
+  yoyo: true,
+  ease: 'sine.inOut',
+  delay: 0.8
+});
+
+</script>
+</body>
+</html>

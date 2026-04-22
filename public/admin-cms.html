@@ -792,55 +792,8 @@
 <!-- ════════════════════ SHELL ════════════════════ -->
 <div class="shell">
 
-  <!-- ── SIDEBAR ── -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-logo-mark">
-        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 2L3 6v8l7 4 7-4V6L10 2z" stroke="#C8A84B" stroke-width="1.25" stroke-linejoin="round"/>
-          <path d="M10 2v12M3 6l7 4 7-4" stroke="#C8A84B" stroke-width="1.25" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="brand-text">
-        <div class="brand-title">Foundation Room</div>
-        <div class="brand-badge">CMS</div>
-      </div>
-    </div>
-
-    <nav class="sidebar-nav" id="sidebarNav">
-      <div class="nav-section-label">Content</div>
-      <div class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
-        <span class="nav-icon">📊</span> Dashboard
-      </div>
-      <div class="nav-item" data-section="courses" onclick="switchSection('courses')">
-        <span class="nav-icon">📚</span> Courses
-      </div>
-      <div class="nav-item" data-section="instructors" onclick="switchSection('instructors')">
-        <span class="nav-icon">👤</span> Instructors
-      </div>
-      <div class="nav-item" data-section="blog" onclick="switchSection('blog')">
-        <span class="nav-icon">📝</span> Blog Posts
-      </div>
-      <div class="nav-item" data-section="students" onclick="switchSection('students')">
-        <span class="nav-icon">🎓</span> Students
-      </div>
-      <div class="nav-section-label" style="margin-top:12px;">System</div>
-      <a class="nav-item" href="/admin-panel.html">
-        <span class="nav-icon">⚙️</span> Admin Panel
-      </a>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="sidebar-user">
-        <div class="sidebar-avatar" id="userAvatar">A</div>
-        <div class="sidebar-user-info">
-          <div class="user-name" id="userName">Administrator</div>
-          <div class="user-role">Super Admin</div>
-        </div>
-      </div>
-      <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
-    </div>
-  </aside>
+  <!-- ── SIDEBAR (rendered by admin-sidebar.js) ── -->
+  <aside class="sidebar" id="sidebar"></aside>
 
   <!-- ── MAIN WRAP ── -->
   <div class="main-wrap">
@@ -1046,12 +999,6 @@ function getToken() {
 function checkAuth() {
   const token = getToken();
   if (!token) { window.location.href = '/login'; return false; }
-  // Try to decode display name from JWT payload
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    if (payload.name) document.getElementById('userName').textContent = payload.name;
-    if (payload.name) document.getElementById('userAvatar').textContent = payload.name.charAt(0).toUpperCase();
-  } catch(e) {}
   return true;
 }
 
@@ -1063,7 +1010,7 @@ function handleLogout() {
 // ─────────────────────────────────────────────
 //  API WRAPPER
 // ─────────────────────────────────────────────
-async function api(method, path, body) {
+async function cmsApi(method, path, body) {
   const token = getToken();
   const opts = {
     method,
@@ -1432,10 +1379,10 @@ async function submitCourse() {
     status: g('f-status'),
   };
   if (drawerMode === 'create') {
-    await api('POST', '/api/cms/courses', body);
+    await cmsApi('POST', '/api/cms/courses', body);
     showToast('Course created', 'success');
   } else {
-    await api('PUT', '/api/cms/courses/' + drawerItem.id, body);
+    await cmsApi('PUT', '/api/cms/courses/' + drawerItem.id, body);
     showToast('Course updated', 'success');
   }
 }
@@ -1456,10 +1403,10 @@ async function submitInstructor() {
     const pwd = g('f-password');
     if (!pwd) throw new Error('Password is required');
     body.password = pwd;
-    await api('POST', '/api/cms/instructors', body);
+    await cmsApi('POST', '/api/cms/instructors', body);
     showToast('Instructor created', 'success');
   } else {
-    await api('PUT', '/api/cms/instructors/' + drawerItem.id, body);
+    await cmsApi('PUT', '/api/cms/instructors/' + drawerItem.id, body);
     showToast('Instructor updated', 'success');
   }
 }
@@ -1481,10 +1428,10 @@ async function submitBlog() {
     cover_image: g('f-cover-image'),
   };
   if (drawerMode === 'create') {
-    await api('POST', '/api/cms/blog', body);
+    await cmsApi('POST', '/api/cms/blog', body);
     showToast('Post created', 'success');
   } else {
-    await api('PUT', '/api/cms/blog/' + drawerItem.id, body);
+    await cmsApi('PUT', '/api/cms/blog/' + drawerItem.id, body);
     showToast('Post updated', 'success');
   }
 }
@@ -1494,7 +1441,7 @@ async function submitBlog() {
 // ─────────────────────────────────────────────
 async function loadDashboard() {
   try {
-    const stats = await api('GET', '/api/cms/stats');
+    const stats = await cmsApi('GET', '/api/cms/stats');
     animateStat('stat-courses', stats.totalCourses || 0);
     animateStat('stat-students', stats.totalStudents || 0);
     animateStat('stat-instructors', stats.totalInstructors || 0);
@@ -1512,7 +1459,7 @@ async function loadDashboard() {
 
   // Recent posts
   try {
-    const posts = await api('GET', '/api/cms/blog');
+    const posts = await cmsApi('GET', '/api/cms/blog');
     const recent = (posts || []).slice(0, 5);
     const el = document.getElementById('recentPosts');
     if (!recent.length) {
@@ -1531,7 +1478,7 @@ async function loadDashboard() {
 
   // Recent enrollments
   try {
-    const students = await api('GET', '/api/cms/students');
+    const students = await cmsApi('GET', '/api/cms/students');
     const recent = (students || []).slice(0, 5);
     const el = document.getElementById('recentEnrollments');
     if (!recent.length) {
@@ -1568,7 +1515,7 @@ async function loadCourses() {
   const tbody = document.getElementById('coursesTbody');
   tbody.innerHTML = '<tr><td colspan="7"><div class="loading-rows"><div class="loading-row"></div><div class="loading-row"></div><div class="loading-row"></div></div></td></tr>';
   try {
-    const courses = await api('GET', '/api/cms/courses');
+    const courses = await cmsApi('GET', '/api/cms/courses');
     if (!courses || !courses.length) {
       tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📚</div><p>No courses yet. Create one!</p></div></td></tr>';
       return;
@@ -1604,7 +1551,7 @@ function editCourse(course) {
 
 async function loadInstructorsIntoSelect(selectedId) {
   try {
-    const instructors = await api('GET', '/api/cms/instructors');
+    const instructors = await cmsApi('GET', '/api/cms/instructors');
     const sel = document.getElementById('f-instructor');
     if (!sel) return;
     sel.innerHTML = '<option value="">Select instructor…</option>' +
@@ -1617,7 +1564,7 @@ async function loadInstructorsIntoSelect(selectedId) {
 async function toggleCourseStatus(id, currentStatus) {
   const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
   try {
-    await api('PATCH', `/api/cms/courses/${id}/status`, { status: newStatus });
+    await cmsApi('PATCH', `/api/cms/courses/${id}/status`, { status: newStatus });
     showToast(`Course marked ${newStatus}`, 'success');
     loadCourses();
   } catch(e) { showToast(e.message, 'error'); }
@@ -1626,7 +1573,7 @@ async function toggleCourseStatus(id, currentStatus) {
 function deleteCourse(id, name) {
   confirmDelete(id, name, async () => {
     try {
-      await api('DELETE', `/api/cms/courses/${id}`);
+      await cmsApi('DELETE', `/api/cms/courses/${id}`);
       showToast('Course deleted', 'success');
       loadCourses();
     } catch(e) { showToast(e.message, 'error'); }
@@ -1653,7 +1600,7 @@ async function loadInstructors() {
   const tbody = document.getElementById('instructorsTbody');
   tbody.innerHTML = '<tr><td colspan="6"><div class="loading-rows"><div class="loading-row"></div><div class="loading-row"></div></div></td></tr>';
   try {
-    const instructors = await api('GET', '/api/cms/instructors');
+    const instructors = await cmsApi('GET', '/api/cms/instructors');
     if (!instructors || !instructors.length) {
       tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👤</div><p>No instructors yet.</p></div></td></tr>';
       return;
@@ -1682,7 +1629,7 @@ async function loadInstructors() {
 function deleteInstructor(id, name) {
   confirmDelete(id, name, async () => {
     try {
-      await api('DELETE', `/api/cms/instructors/${id}`);
+      await cmsApi('DELETE', `/api/cms/instructors/${id}`);
       showToast('Instructor deleted', 'success');
       loadInstructors();
     } catch(e) { showToast(e.message, 'error'); }
@@ -1696,7 +1643,7 @@ async function loadBlog() {
   const tbody = document.getElementById('blogTbody');
   tbody.innerHTML = '<tr><td colspan="7"><div class="loading-rows"><div class="loading-row"></div><div class="loading-row"></div></div></td></tr>';
   try {
-    const posts = await api('GET', '/api/cms/blog');
+    const posts = await cmsApi('GET', '/api/cms/blog');
     if (!posts || !posts.length) {
       tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📝</div><p>No posts yet.</p></div></td></tr>';
       return;
@@ -1727,7 +1674,7 @@ async function loadBlog() {
 async function toggleBlogStatus(id, currentStatus) {
   const newStatus = currentStatus === 'published' ? 'draft' : 'published';
   try {
-    await api('PATCH', `/api/cms/blog/${id}/status`, { status: newStatus });
+    await cmsApi('PATCH', `/api/cms/blog/${id}/status`, { status: newStatus });
     showToast(`Post ${newStatus}`, 'success');
     loadBlog();
   } catch(e) { showToast(e.message, 'error'); }
@@ -1736,7 +1683,7 @@ async function toggleBlogStatus(id, currentStatus) {
 function deleteBlogPost(id, name) {
   confirmDelete(id, name, async () => {
     try {
-      await api('DELETE', `/api/cms/blog/${id}`);
+      await cmsApi('DELETE', `/api/cms/blog/${id}`);
       showToast('Post deleted', 'success');
       loadBlog();
     } catch(e) { showToast(e.message, 'error'); }
@@ -1750,7 +1697,7 @@ async function loadStudents() {
   const tbody = document.getElementById('studentsTbody');
   tbody.innerHTML = '<tr><td colspan="5"><div class="loading-rows"><div class="loading-row"></div><div class="loading-row"></div></div></td></tr>';
   try {
-    const students = await api('GET', '/api/cms/students');
+    const students = await cmsApi('GET', '/api/cms/students');
     if (!students || !students.length) {
       tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">🎓</div><p>No students yet.</p></div></td></tr>';
       return;
@@ -1782,7 +1729,7 @@ function viewStudent(id) {
 function disableStudent(id, name) {
   confirmDelete(id, name + ' (disable account)', async () => {
     try {
-      await api('DELETE', `/api/cms/students/${id}`);
+      await cmsApi('DELETE', `/api/cms/students/${id}`);
       showToast('Student account disabled', 'success');
       loadStudents();
     } catch(e) { showToast(e.message, 'error'); }
@@ -1835,16 +1782,17 @@ function initAnimations() {
 }
 
 // ─────────────────────────────────────────────
-//  BOOT
+//  BOOT — triggered by auth-guard after session is verified
 // ─────────────────────────────────────────────
-(function boot() {
-  if (!checkAuth()) return;
+function boot() {
   initAnimations();
   loadDashboard();
-})();
+}
+document.addEventListener('userLoaded', boot, { once: true });
 </script>
-<script src="/assets/js/api.js"></script>
-<script src="/assets/js/auth-guard.js"></script>
+<script src="/assets/js/api.js?v=2"></script>
+<script src="/assets/js/auth-guard.js?v=2"></script>
 <script>requireRole(['admin']);</script>
+<script src="/assets/js/admin-sidebar.js?v=2"></script>
 </body>
 </html>

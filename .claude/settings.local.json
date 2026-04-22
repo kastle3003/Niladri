@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp student-announcements.html admin-announcements.html)",
+      "Bash(cp student-messaging.html admin-messaging.html)",
+      "Bash(cp student-notifications.html admin-notifications.html)",
+      "Bash(cp student-payments.html admin-payments.html)",
+      "Bash(cp student-profile.html admin-profile.html)",
+      "Bash(sed -i 's|<script src=\"/assets/js/student-sidebar.js\"></script>|<script src=\"/assets/js/admin-sidebar.js\"></script>|g' admin-announcements.html admin-messaging.html admin-notifications.html admin-payments.html admin-profile.html)",
+      "Bash(sed -i \"s|requireRole\\(\\\\['student'\\\\]\\)|requireRole\\(['admin']\\)|g\" admin-announcements.html admin-messaging.html admin-notifications.html admin-payments.html admin-profile.html)",
+      "Bash(sed -i 's|<title>Announcements — The Archive</title>|<title>Admin Announcements — The Archive</title>|g' admin-announcements.html)",
+      "Bash(sed -i 's|<title>Messages — The Archive</title>|<title>Admin Messages — The Archive</title>|g' admin-messaging.html)",
+      "Bash(sed -i 's|<title>Notifications — The Archive</title>|<title>Admin Notifications — The Archive</title>|g' admin-notifications.html)",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@thefoundationroom.in\",\"password\":\"admin@tfr2024\"}')",
+      "Bash(node -c public/assets/js/admin-sidebar.js)",
+      "Bash(curl -s \"http://localhost:3001/admin-messaging.html\")",
+      "Bash(taskkill *)",
+      "Bash(npm start *)",
+      "Bash(curl -s -I http://localhost:3001/admin-panel.html)",
+      "Bash(curl -s \"http://localhost:3001/assets/js/auth-guard.js?v=2\")",
+      "Bash(curl -s \"http://localhost:3001/assets/js/api.js?v=2\")",
+      "Bash(npm ls *)",
+      "Bash(npm install *)",
+      "Bash(node _diagnose.js)",
+      "Bash(node _verify.js)",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"niladri@thefoundationroom.in\",\"password\":\"password123\"}')"
+    ]
+  }
+}

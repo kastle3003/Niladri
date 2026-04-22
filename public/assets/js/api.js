@@ -9,6 +9,7 @@ const api = {
   }),
   _handle: async (res) => {
     if (res.status === 401) {
+      console.warn('[api] 401 on', res.url, '→ clearing token & redirecting to sign-in');
       localStorage.removeItem('archive_token');
       localStorage.removeItem('archive_user');
       window.location.href = '/index.html';

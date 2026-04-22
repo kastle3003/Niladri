@@ -16,28 +16,33 @@
     catalog:       '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
     archive:       '<polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>',
     profile:       '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    instructor:    '<circle cx="12" cy="8" r="4"/><path d="M12 14c-4 0-8 2-8 6v2h16v-2c0-4-4-6-8-6z"/>',
+    student:       '<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/>',
   };
 
+  const CMS_SUBITEMS = [
+    { hash: 'dashboard',   label: 'Dashboard',    icon: I.dashboard  },
+    { hash: 'courses',     label: 'Courses',      icon: I.courses    },
+    { hash: 'instructors', label: 'Instructors',  icon: I.instructor },
+    { hash: 'blog',        label: 'Blog Posts',   icon: I.blog       },
+    { hash: 'students',    label: 'Students',     icon: I.student    },
+  ];
+
   const ITEMS = [
-    { href: '/admin-panel.html',          label: 'Admin Panel',    icon: I.dashboard },
+    { href: '/admin-panel.html',           label: 'Admin Panel',    icon: I.dashboard },
     { section: 'Content' },
-    { href: '/admin-cms.html',            label: 'CMS',            icon: I.cms },
-    { href: '/blog.html',                 label: 'Blog',           icon: I.blog },
-    { href: '/course-manager.html',       label: 'Courses',        icon: I.courses },
-    { href: '/student-archive.html',       label: 'The Archive',    icon: I.archive },
+    { href: '/admin-cms.html',             label: 'CMS',            icon: I.cms, subitems: CMS_SUBITEMS },
     { section: 'Commerce' },
-    { href: '/student-payments.html',             label: 'Payments',       icon: I.payments },
+    { href: '/admin-payments.html',        label: 'Payments',       icon: I.payments },
     { section: 'Engagement' },
-    { href: '/student-announcements.html',        label: 'Announcements',  icon: I.announce },
-    { href: '/student-messaging.html',            label: 'Messages',       icon: I.messages },
-    { href: '/email-automation.html',     label: 'Email',          icon: I.email },
-    { href: '/student-notifications.html',        label: 'Notifications',  icon: I.notifications },
+    { href: '/admin-announcements.html',   label: 'Announcements',  icon: I.announce },
+    { href: '/admin-messaging.html',       label: 'Messages',       icon: I.messages },
+    { href: '/email-automation.html',      label: 'Email',          icon: I.email },
+    { href: '/admin-notifications.html',   label: 'Notifications',  icon: I.notifications },
     { section: 'Insights' },
-    { href: '/analytics-instructor.html', label: 'Analytics',      icon: I.analytics },
-    { section: 'Discovery' },
-    { href: '/student-course-catalog.html',       label: 'Browse Catalog', icon: I.catalog },
+    { href: '/admin-panel.html#dashboard', label: 'Analytics',      icon: I.analytics },
     { section: 'Account' },
-    { href: '/student-profile.html',      label: 'Profile',        icon: I.profile },
+    { href: '/admin-profile.html',         label: 'Profile',        icon: I.profile },
   ];
 
   const SVG_TPL = (inner) =>
@@ -58,6 +63,53 @@
         pointer-events: none;
       }
       .sidebar-nav .nav-section:first-child { padding-top: 6px; }
+      .sidebar-nav .nav-subgroup {
+        display: flex;
+        flex-direction: column;
+        margin: 2px 0 6px;
+        padding-left: 22px;
+        border-left: 1px solid rgba(200,168,75,0.12);
+        margin-left: 22px;
+      }
+      .sidebar-nav .nav-subitem {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        margin: 1px 0;
+        font-size: 12.5px;
+        color: var(--text-3, rgba(255,255,255,0.55));
+        text-decoration: none;
+        border-radius: 4px;
+        transition: color .15s, background .15s;
+      }
+      .sidebar-nav .nav-subitem:hover {
+        color: var(--text, #F0E6D3);
+        background: rgba(200,168,75,0.06);
+      }
+      .sidebar-nav .nav-subitem.active {
+        color: var(--gold, #C8A84B);
+        background: rgba(200,168,75,0.1);
+      }
+      .sidebar-nav .nav-subicon { width: 14px; height: 14px; flex-shrink: 0; }
+      .sidebar-user { cursor: default !important; }
+      .sidebar-user:hover { background: transparent !important; }
+      .sidebar-logout-btn {
+        background: transparent;
+        border: 1px solid rgba(200,168,75,0.15);
+        border-radius: 6px;
+        width: 32px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        color: var(--text-3, rgba(255,255,255,0.55));
+        transition: color .15s, border-color .15s, background .15s;
+        flex-shrink: 0;
+      }
+      .sidebar-logout-btn:hover {
+        color: var(--gold, #C8A84B);
+        border-color: rgba(200,168,75,0.4);
+        background: rgba(200,168,75,0.08);
+      }
     `;
     document.head.appendChild(style);
   }
@@ -76,6 +128,7 @@
 
   function render() {
     const path = window.location.pathname;
+    const hash = (window.location.hash || '').replace(/^#/, '');
     const user = getCachedUser();
     const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Admin';
     const initials = initialsFor(user);
@@ -83,7 +136,19 @@
     const nav = ITEMS.map(it => {
       if (it.section) return `<div class="nav-section">${it.section}</div>`;
       const active = path === it.href ? ' active' : '';
-      return `<a href="${it.href}" class="nav-item${active}">${SVG_TPL(it.icon)}${it.label}</a>`;
+      const main = `<a href="${it.href}" class="nav-item${active}">${SVG_TPL(it.icon)}${it.label}</a>`;
+      if (!it.subitems || path !== it.href) return main;
+
+      const defaultHash = it.subitems[0] && it.subitems[0].hash;
+      const currentHash = hash || defaultHash;
+      const subs = it.subitems.map(s => {
+        const activeSub = s.hash === currentHash ? ' active' : '';
+        const icon = s.icon
+          ? `<svg class="nav-subicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${s.icon}</svg>`
+          : '';
+        return `<a href="${it.href}#${s.hash}" class="nav-subitem${activeSub}" data-cms-hash="${s.hash}">${icon}${s.label}</a>`;
+      }).join('');
+      return `${main}<div class="nav-subgroup">${subs}</div>`;
     }).join('');
 
     return `
@@ -94,15 +159,39 @@
       </div>
       <nav class="sidebar-nav">${nav}</nav>
       <div class="sidebar-footer">
-        <div class="sidebar-user" onclick="(window.logout||function(){localStorage.clear();location.href='/index.html';})()">
+        <div class="sidebar-user">
           <div class="sidebar-avatar" id="sb-avatar">${initials}</div>
           <div class="sidebar-user-info">
             <div class="user-name" id="sb-name">${name}</div>
             <div class="user-role">Admin</div>
           </div>
+          <button type="button" class="sidebar-logout-btn" title="Sign out"
+            onclick="(window.logout||function(){localStorage.removeItem('archive_token');localStorage.removeItem('archive_user');location.href='/index.html';})()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>
         </div>
       </div>
     `;
+  }
+
+  function wireCmsSubitems() {
+    if (window.location.pathname !== '/admin-cms.html') return;
+    const subs = document.querySelectorAll('.nav-subitem[data-cms-hash]');
+    subs.forEach(a => {
+      a.addEventListener('click', (e) => {
+        const hash = a.getAttribute('data-cms-hash');
+        if (typeof window.switchSection === 'function') {
+          e.preventDefault();
+          history.replaceState(null, '', '#' + hash);
+          window.switchSection(hash);
+          subs.forEach(x => x.classList.toggle('active', x === a));
+        }
+      });
+    });
+    const initial = (window.location.hash || '').replace(/^#/, '');
+    if (initial && typeof window.switchSection === 'function') {
+      setTimeout(() => window.switchSection(initial), 0);
+    }
   }
 
   function mount() {
@@ -110,6 +199,7 @@
     if (!el) return;
     ensureStyles();
     el.innerHTML = render();
+    wireCmsSubitems();
   }
 
   if (document.readyState === 'loading') {

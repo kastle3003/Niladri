@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Foundation Room — Admin</title>
+  <title>The Foundation Room — Admin Panel</title>
+  <meta name="description" content="Admin dashboard for The Foundation Room LMS — manage users, courses, payments, and platform settings.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/archive.css">
@@ -23,35 +24,41 @@
       --text-3: #6B5E50;
       --serif: 'Cormorant Garamond', Georgia, serif;
       --sans: 'DM Sans', sans-serif;
+      --emerald: #2A6B4A;
+      --emerald-bg: rgba(42,107,74,0.12);
+      --emerald-text: #5ECFA0;
+      --ruby: #6B2A2A;
+      --ruby-bg: rgba(107,42,42,0.12);
+      --ruby-text: #CF5E5E;
+      --blue: #2A4A6B;
+      --blue-bg: rgba(42,74,107,0.12);
+      --blue-text: #5EA0CF;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
       background: var(--bg);
       color: var(--text);
       font-family: var(--sans);
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    /* ── Shell layout ── */
-    .shell {
-      display: flex;
-      min-height: 100vh;
-    }
+    /* ── Shell ── */
+    .shell { display: flex; min-height: 100vh; }
 
     /* ── Sidebar ── */
     .sidebar {
-      width: 240px;
+      width: 260px;
       min-height: 100vh;
       background: var(--bg);
       border-right: 1px solid rgba(200,168,75,0.08);
       display: flex;
       flex-direction: column;
       position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
+      top: 0; left: 0; bottom: 0;
       z-index: 100;
       overflow: hidden;
     }
@@ -81,12 +88,20 @@
       flex: 1;
       overflow-y: auto;
     }
-
+    .nav-section {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 14px 14px 6px;
+      margin-top: 4px;
+    }
     .nav-item {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 10px 12px;
+      padding: 10px 14px;
       border-radius: 8px;
       font-size: 13px;
       font-weight: 500;
@@ -95,6 +110,7 @@
       transition: all 0.16s ease;
       margin-bottom: 2px;
       border-left: 2px solid transparent;
+      cursor: pointer;
     }
     .nav-item:hover {
       color: var(--text-2);
@@ -126,36 +142,24 @@
     }
     .sidebar-user:hover { background: rgba(200,168,75,0.06); }
     .sidebar-avatar {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       border-radius: 50%;
       background: rgba(200,168,75,0.15);
       color: var(--gold);
-      font-size: 11px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
     .sidebar-user-info { flex: 1; min-width: 0; }
     .user-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 13px; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .user-role {
-      font-size: 11px;
-      color: var(--text-3);
-      margin-top: 1px;
-    }
+    .user-role { font-size: 11px; color: var(--text-3); margin-top: 1px; }
 
-    /* ── Main wrap ── */
+    /* ── Main ── */
     .main-wrap {
-      margin-left: 240px;
+      margin-left: 260px;
       flex: 1;
       min-height: 100vh;
       display: flex;
@@ -164,17 +168,13 @@
 
     /* ── Topbar ── */
     .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 90;
+      position: sticky; top: 0; z-index: 90;
       background: rgba(8,7,6,0.92);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(200,168,75,0.08);
       height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 0 28px;
     }
     .topbar-title {
@@ -184,43 +184,29 @@
       color: var(--text);
       font-style: italic;
     }
-    .topbar-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
     .icon-btn {
-      width: 36px;
-      height: 36px;
+      width: 36px; height: 36px;
       border-radius: 8px;
       background: rgba(200,168,75,0.06);
       border: 1px solid rgba(200,168,75,0.1);
       color: var(--text-3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       cursor: pointer;
       transition: all 0.15s;
     }
     .icon-btn:hover { color: var(--gold); background: rgba(200,168,75,0.1); }
     .topbar-avatar {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       border-radius: 50%;
       background: rgba(200,168,75,0.15);
       color: var(--gold);
-      font-size: 11px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
     }
 
     /* ── Main content ── */
-    .main-content {
-      padding: 32px 28px;
-      flex: 1;
-    }
+    .main-content { padding: 32px 28px; flex: 1; }
 
     .page-title {
       font-family: var(--serif);
@@ -236,23 +222,75 @@
       margin-bottom: 28px;
     }
 
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 5px;
+      width: fit-content;
+      margin-bottom: 28px;
+      border: 1px solid rgba(200,168,75,0.08);
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 500;
+      font-family: var(--sans);
+      color: var(--text-3);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .tab-btn:not(.active):hover {
+      color: var(--text-2);
+      background: rgba(200,168,75,0.05);
+    }
+    .tab-btn.active {
+      background: var(--gold);
+      color: #0a0806;
+      font-weight: 600;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
     /* ── Stats row ── */
     .stats-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 16px;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
+    .stats-row-5 { grid-template-columns: repeat(5, 1fr); }
     .stat-card {
       background: var(--bg-card);
       border: 1px solid rgba(200,168,75,0.1);
-      border-radius: 12px;
-      padding: 20px 22px;
+      border-radius: 14px;
+      padding: 22px 24px;
       transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--gold-dim), transparent);
     }
     .stat-card:hover {
       border-color: rgba(200,168,75,0.25);
       transform: translateY(-2px);
+    }
+    .stat-card-icon {
+      position: absolute; top: 18px; right: 18px;
+      color: var(--text-3); opacity: 0.3;
     }
     .stat-number {
       font-family: var(--serif);
@@ -269,132 +307,13 @@
       letter-spacing: 0.08em;
       font-weight: 500;
     }
-
-    /* ── Tab bar ── */
-    .tab-bar {
-      display: flex;
-      gap: 4px;
-      background: var(--bg-card);
-      border-radius: 12px;
-      padding: 5px;
-      width: fit-content;
-      margin-bottom: 28px;
-      border: 1px solid rgba(200,168,75,0.08);
-    }
-    .tab-btn {
-      padding: 9px 20px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      font-family: var(--sans);
+    .stat-sub {
+      font-size: 11px;
       color: var(--text-3);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      transition: all 0.18s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      margin-top: 8px;
     }
-    .tab-btn:not(.active):hover {
-      color: var(--text-2);
-      background: rgba(200,168,75,0.05);
-    }
-    .tab-btn.active {
-      background: var(--gold);
-      color: #0a0806;
-      font-weight: 600;
-    }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    /* ── Guide/Accordion ── */
-    .guide-wrap { margin-bottom: 24px; }
-    .guide-title {
-      font-family: var(--serif);
-      font-style: italic;
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 14px;
-    }
-    .accordion-item {
-      background: var(--bg-card);
-      border: 1px solid rgba(200,168,75,0.08);
-      border-radius: 10px;
-      margin-bottom: 6px;
-      overflow: hidden;
-      transition: border-color 0.2s;
-    }
-    .accordion-item:hover { border-color: rgba(200,168,75,0.18); }
-    .accordion-item.open { border-color: rgba(200,168,75,0.18); }
-    .accordion-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 14px 18px;
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.15s ease;
-    }
-    .accordion-header:hover { background: rgba(200,168,75,0.04); }
-    .accordion-num {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(200,168,75,0.15);
-      color: var(--gold);
-      font-size: 12px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      border: 1px solid rgba(200,168,75,0.2);
-    }
-    .accordion-label {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-2);
-      flex: 1;
-    }
-    .accordion-item.open .accordion-label { color: var(--text); }
-    .accordion-chevron {
-      width: 16px;
-      height: 16px;
-      color: var(--text-3);
-      transition: transform 0.2s ease;
-      flex-shrink: 0;
-    }
-    .accordion-item.open .accordion-chevron { transform: rotate(180deg); color: var(--gold); }
-    .accordion-body {
-      display: none;
-      padding: 0 18px 16px 60px;
-      font-size: 13px;
-      color: var(--text-2);
-      line-height: 1.65;
-    }
-    .accordion-item.open .accordion-body { display: block; }
-    .accordion-body code {
-      background: rgba(200,168,75,0.1);
-      border-radius: 4px;
-      padding: 2px 6px;
-      font-size: 12px;
-      font-family: 'Courier New', monospace;
-      color: var(--gold-bright);
-    }
-    .accordion-body pre {
-      background: #0a0806;
-      color: var(--text-2);
-      border-radius: 8px;
-      padding: 14px 16px;
-      font-size: 12px;
-      overflow-x: auto;
-      margin-top: 10px;
-      font-family: 'Courier New', monospace;
-      line-height: 1.55;
-      border: 1px solid rgba(200,168,75,0.1);
-    }
+    .stat-sub .up { color: var(--emerald-text); }
+    .stat-sub .down { color: var(--ruby-text); }
 
     /* ── Config Card ── */
     .config-card {
@@ -402,6 +321,7 @@
       border: 1px solid rgba(200,168,75,0.1);
       border-radius: 14px;
       padding: 28px;
+      margin-bottom: 20px;
     }
     .config-card-title {
       font-family: var(--serif);
@@ -409,6 +329,12 @@
       font-size: 20px;
       font-weight: 600;
       color: var(--text);
+      margin-bottom: 22px;
+    }
+    .config-card-subtitle {
+      font-size: 13px;
+      color: var(--text-3);
+      margin-top: -16px;
       margin-bottom: 22px;
     }
 
@@ -456,48 +382,39 @@
       grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
 
     /* ── Input with eye toggle ── */
     .input-wrap { position: relative; }
     .input-wrap .form-input { padding-right: 42px; }
     .eye-btn {
       position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-3);
-      padding: 0;
-      display: flex;
-      align-items: center;
+      right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--text-3); padding: 0;
+      display: flex; align-items: center;
       transition: color 0.15s;
     }
     .eye-btn:hover { color: var(--gold); }
 
-    /* ── Toggle switch ── */
+    /* ── Toggle ── */
     .toggle-wrap {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 18px;
     }
-    .toggle-label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-2);
-    }
+    .toggle-label { font-size: 13px; font-weight: 500; color: var(--text-2); }
     .toggle {
-      position: relative;
-      width: 42px;
-      height: 24px;
-      flex-shrink: 0;
+      position: relative; width: 42px; height: 24px; flex-shrink: 0;
     }
     .toggle input { opacity: 0; width: 0; height: 0; }
     .toggle-track {
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       border-radius: 99px;
       background: rgba(200,168,75,0.1);
       border: 1.5px solid rgba(200,168,75,0.2);
@@ -511,12 +428,10 @@
     .toggle-track::after {
       content: '';
       position: absolute;
-      width: 18px;
-      height: 18px;
+      width: 18px; height: 18px;
       border-radius: 50%;
       background: var(--bg-2);
-      top: 50%;
-      left: 2px;
+      top: 50%; left: 2px;
       transform: translateY(-50%);
       transition: left 0.18s ease;
       box-shadow: 0 1px 3px rgba(0,0,0,0.4);
@@ -524,25 +439,14 @@
     .toggle input:checked + .toggle-track::after { left: 20px; background: #0a0806; }
 
     /* ── Checkboxes ── */
-    .check-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+    .check-grid { display: flex; flex-wrap: wrap; gap: 10px; }
     .check-item {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 13px;
-      color: var(--text-2);
-      font-weight: 500;
-      cursor: pointer;
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; color: var(--text-2); font-weight: 500; cursor: pointer;
     }
     .check-item input[type="checkbox"] {
-      width: 15px;
-      height: 15px;
-      accent-color: var(--gold);
-      cursor: pointer;
+      width: 15px; height: 15px;
+      accent-color: var(--gold); cursor: pointer;
     }
 
     /* ── Buttons ── */
@@ -560,10 +464,7 @@
       transition: all 0.18s ease;
       text-decoration: none;
     }
-    .btn-primary {
-      background: var(--gold);
-      color: #0a0806;
-    }
+    .btn-primary { background: var(--gold); color: #0a0806; }
     .btn-primary:hover { background: var(--gold-bright); }
     .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
     .btn-outline {
@@ -578,8 +479,13 @@
       color: var(--text-2);
     }
     .btn-ghost:hover { background: rgba(240,230,211,0.05); }
-
-    /* ── Button row ── */
+    .btn-danger {
+      background: rgba(107,42,42,0.4);
+      border: 1px solid rgba(207,94,94,0.3);
+      color: var(--ruby-text);
+    }
+    .btn-danger:hover { background: rgba(107,42,42,0.6); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
     .btn-row {
       display: flex;
       gap: 10px;
@@ -588,26 +494,343 @@
       border-top: 1px solid rgba(200,168,75,0.08);
     }
 
-    /* ── Toasts ── */
-    .toast-container {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    /* ── Table ── */
+    .table-wrap {
+      overflow-x: auto;
     }
-    .toast {
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead tr {
+      border-bottom: 1px solid rgba(200,168,75,0.1);
+    }
+    th {
+      text-align: left;
+      padding: 12px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text-2);
+      border-bottom: 1px solid rgba(200,168,75,0.05);
+      vertical-align: middle;
+    }
+    tbody tr {
+      transition: background 0.15s;
+    }
+    tbody tr:hover { background: rgba(200,168,75,0.04); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 12px;
+      border: 1px solid;
+    }
+    .badge-gold {
+      background: rgba(200,168,75,0.1);
+      color: var(--gold);
+      border-color: rgba(200,168,75,0.2);
+    }
+    .badge-green {
+      background: var(--emerald-bg);
+      color: var(--emerald-text);
+      border-color: rgba(42,107,74,0.3);
+    }
+    .badge-red {
+      background: var(--ruby-bg);
+      color: var(--ruby-text);
+      border-color: rgba(107,42,42,0.3);
+    }
+    .badge-blue {
+      background: var(--blue-bg);
+      color: var(--blue-text);
+      border-color: rgba(42,74,107,0.3);
+    }
+    .badge-muted {
+      background: rgba(107,94,80,0.08);
+      color: var(--text-3);
+      border-color: rgba(107,94,80,0.2);
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .toolbar-left { display: flex; align-items: center; gap: 12px; }
+    .toolbar-right { display: flex; align-items: center; gap: 8px; }
+    .search-box {
+      position: relative;
+    }
+    .search-box svg {
+      position: absolute;
+      left: 10px; top: 50%; transform: translateY(-50%);
+      color: var(--text-3);
+    }
+    .search-box input {
+      background: var(--bg-2);
+      border: 1px solid rgba(200,168,75,0.15);
+      border-radius: 8px;
+      padding: 8px 12px 8px 32px;
+      font-size: 13px;
+      font-family: var(--sans);
+      color: var(--text);
+      outline: none;
+      width: 240px;
+      transition: border-color 0.18s;
+    }
+    .search-box input:focus { border-color: var(--gold); }
+    .filter-select {
+      background: var(--bg-2);
+      border: 1px solid rgba(200,168,75,0.15);
+      border-radius: 8px;
+      padding: 8px 30px 8px 12px;
+      font-size: 12px;
+      font-family: var(--sans);
+      color: var(--text-2);
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B5E50' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      cursor: pointer;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(8,7,6,0.78);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 300;
+      animation: fadeIn 0.14s ease;
+      backdrop-filter: blur(5px);
+    }
+    .modal-overlay[style*="display: none"] { display: none !important; }
+    .modal {
+      background: var(--bg-elevated);
+      border: 1px solid rgba(200,168,75,0.15);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      animation: scaleIn 0.18s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-title {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 22px;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    /* ── Accordion ── */
+    .accordion-item {
+      background: var(--bg-card);
+      border: 1px solid rgba(200,168,75,0.08);
+      border-radius: 10px;
+      margin-bottom: 6px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .accordion-item:hover { border-color: rgba(200,168,75,0.18); }
+    .accordion-item.open { border-color: rgba(200,168,75,0.18); }
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+    .accordion-header:hover { background: rgba(200,168,75,0.04); }
+    .accordion-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(200,168,75,0.15);
+      color: var(--gold);
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid rgba(200,168,75,0.2);
+    }
+    .accordion-label {
+      font-size: 14px; font-weight: 600; color: var(--text-2); flex: 1;
+    }
+    .accordion-item.open .accordion-label { color: var(--text); }
+    .accordion-chevron {
+      width: 16px; height: 16px;
+      color: var(--text-3);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+    .accordion-item.open .accordion-chevron { transform: rotate(180deg); color: var(--gold); }
+    .accordion-body {
+      display: none;
+      padding: 0 18px 16px 60px;
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.65;
+    }
+    .accordion-item.open .accordion-body { display: block; }
+    .accordion-body code {
+      background: rgba(200,168,75,0.1);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      color: var(--gold-bright);
+    }
+    .accordion-body pre {
+      background: #0a0806;
+      color: var(--text-2);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 12px;
+      overflow-x: auto;
+      margin-top: 10px;
+      font-family: 'Courier New', monospace;
+      line-height: 1.55;
+      border: 1px solid rgba(200,168,75,0.1);
+    }
+
+    /* ── Charts (CSS-only) ── */
+    .chart-wrap {
+      background: var(--bg-card);
+      border: 1px solid rgba(200,168,75,0.1);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .chart-title {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      height: 160px;
+      padding-top: 10px;
+    }
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .bar {
+      width: 100%;
+      max-width: 48px;
+      border-radius: 6px 6px 2px 2px;
+      background: linear-gradient(180deg, var(--gold), var(--gold-dim));
+      min-height: 4px;
+      transition: height 0.6s ease;
+    }
+    .bar-label {
+      font-size: 10px;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .bar-value {
+      font-size: 11px;
+      color: var(--text-2);
+      font-weight: 600;
+    }
+
+    /* ── Activity feed ── */
+    .activity-feed {
+      max-height: 380px;
+      overflow-y: auto;
+    }
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(200,168,75,0.05);
+    }
+    .activity-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .activity-dot.enroll { background: var(--emerald-text); }
+    .activity-dot.user { background: var(--blue-text); }
+    .activity-dot.payment { background: var(--gold); }
+    .activity-text {
+      flex: 1; font-size: 13px; color: var(--text-2); line-height: 1.5;
+    }
+    .activity-text strong { color: var(--text); font-weight: 600; }
+    .activity-time {
+      font-size: 11px; color: var(--text-3); white-space: nowrap; margin-top: 2px;
+    }
+
+    /* ── Role cards ── */
+    .role-card {
+      background: var(--bg-2);
+      border: 1px solid rgba(200,168,75,0.12);
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+    .role-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .role-name { font-size: 14px; font-weight: 600; color: var(--gold); }
+    .role-desc { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+    .perm-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .perm-tag {
+      background: rgba(200,168,75,0.08);
+      border: 1px solid rgba(200,168,75,0.15);
+      color: var(--text-2);
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+
+    /* ── Toasts ── */
+    .toast-container {
+      position: fixed; bottom: 24px; right: 24px;
+      z-index: 9999;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .toast {
+      display: flex; align-items: center; gap: 10px;
       padding: 12px 16px;
       background: var(--bg-elevated);
       border: 1px solid rgba(200,168,75,0.2);
       border-radius: 10px;
-      font-size: 13px;
-      color: var(--text);
+      font-size: 13px; color: var(--text);
       box-shadow: 0 4px 24px rgba(0,0,0,0.5);
       animation: toastIn 0.22s ease;
       max-width: 360px;
@@ -619,120 +842,59 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── SMTP test modal ── */
-    .mini-modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(8,7,6,0.75);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 300;
-      animation: fadeIn 0.14s ease;
-      backdrop-filter: blur(4px);
-    }
-    .mini-modal {
-      background: var(--bg-elevated);
-      border: 1px solid rgba(200,168,75,0.15);
-      border-radius: 14px;
-      padding: 28px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-      animation: scaleIn 0.18s ease;
-    }
-    .mini-modal-title {
-      font-family: var(--serif);
-      font-style: italic;
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 18px;
-    }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-    /* ── Live mode warning ── */
-    .live-warning {
-      background: rgba(200,100,50,0.1);
-      border: 1px solid rgba(200,100,50,0.3);
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
-      font-size: 13px;
-      color: #e09060;
-      font-weight: 600;
-      display: none;
-    }
-    .live-warning.visible { display: block; }
-
     /* ── Spinner ── */
     .spinner {
-      width: 20px;
-      height: 20px;
+      width: 20px; height: 20px;
       border: 2px solid rgba(200,168,75,0.2);
       border-top-color: var(--gold);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center; padding: 48px 20px; color: var(--text-3);
+    }
+    .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.35; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1200px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .stats-row-5 { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .sidebar { width: 200px; }
+      .main-wrap { margin-left: 200px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(200,168,75,0.12); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(200,168,75,0.2); }
+
+    /* ── Price formatting ── */
+    .price { font-family: var(--sans); font-weight: 600; }
   </style>
 </head>
 <body>
 <div class="shell">
 
-  <!-- ── Sidebar ── -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-title">The Foundation Room</div>
-      <div class="brand-sub">Admin Panel</div>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="/instructor-dashboard.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-        Dashboard
-      </a>
-      <a href="/student-course-catalog.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        My Courses
-      </a>
-      <a href="/course-manager.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Course Manager
-      </a>
-      <a href="/student-sheet-music.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        Sheet Music
-      </a>
-      <a href="/student-archive.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-        Archive
-      </a>
-      <a href="/admin-panel.html" class="nav-item active">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
-        Admin Panel
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user" onclick="handleLogout()">
-        <div class="sidebar-avatar" id="sb-avatar">EV</div>
-        <div class="sidebar-user-info">
-          <div class="user-name" id="sb-name">Elias Vance</div>
-          <div class="user-role">Instructor</div>
-        </div>
-      </div>
-    </div>
-  </aside>
+  <!-- ── Sidebar (rendered by admin-sidebar.js) ── -->
+  <aside class="sidebar" id="sidebar"></aside>
 
   <!-- ── Main ── -->
   <div class="main-wrap">
     <header class="topbar" id="topbar">
-      <div class="topbar-title">The Foundation Room — Admin</div>
+      <div class="topbar-title">Admin Control Center</div>
       <div class="topbar-actions">
         <button class="icon-btn" title="Notifications">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         </button>
-        <div class="topbar-avatar" id="topbar-avatar">EV</div>
+        <div class="topbar-avatar" id="topbar-avatar">AD</div>
       </div>
     </header>
 
@@ -740,59 +902,231 @@
 
       <!-- Page header -->
       <div id="page-header" style="margin-bottom:28px;">
-        <h1 class="page-title">The Foundation Room — Admin</h1>
-        <p class="page-subtitle">Configure storage, email delivery, and global settings for The Foundation Room.</p>
-      </div>
-
-      <!-- Stats row -->
-      <div class="stats-row" id="stats-row">
-        <div class="stat-card">
-          <div class="stat-number" id="stat-users">—</div>
-          <div class="stat-label">Total Users</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="stat-courses">—</div>
-          <div class="stat-label">Active Courses</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="stat-storage">—</div>
-          <div class="stat-label">Storage Used</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="stat-emails">—</div>
-          <div class="stat-label">Emails Sent</div>
-        </div>
+        <h1 class="page-title">Admin Control Center</h1>
+        <p class="page-subtitle">Manage users, courses, finances, and platform settings for The Foundation Room.</p>
       </div>
 
       <!-- Tab Bar -->
       <div class="tab-bar" id="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('general', this)">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-          General
-        </button>
-        <button class="tab-btn" onclick="switchTab('s3', this)">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-          S3 Storage
-        </button>
-        <button class="tab-btn" onclick="switchTab('smtp', this)">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Email / SMTP
+        <button class="tab-btn active" onclick="switchTab('dashboard', this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
         </button>
         <button class="tab-btn" onclick="switchTab('users', this)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Users
         </button>
+        <button class="tab-btn" onclick="switchTab('courses', this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          Courses
+        </button>
+        <button class="tab-btn" onclick="switchTab('financial', this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Financial
+        </button>
+        <button class="tab-btn" onclick="switchTab('announcements', this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
+          Announcements
+        </button>
+        <button class="tab-btn" onclick="switchTab('general', this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </button>
+        <button class="tab-btn" onclick="switchTab('s3', this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          Storage
+        </button>
+        <button class="tab-btn" onclick="switchTab('smtp', this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email
+        </button>
         <button class="tab-btn" onclick="switchTab('roles', this)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Roles &amp; Permissions
+          Roles
+        </button>
+        <button class="tab-btn" onclick="switchTab('subscriptions', this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          Subscriptions
+        </button>
+        <button class="tab-btn" onclick="switchTab('moderation', this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Moderation
         </button>
       </div>
 
-      <!-- ──────────────────── General Tab ──────────────────── -->
-      <div class="tab-panel active" id="tab-general">
-        <div class="config-card">
-          <div class="config-card-title">General Settings</div>
+      <!-- ═══════════ DASHBOARD TAB ═══════════ -->
+      <div class="tab-panel active" id="tab-dashboard">
+        <div class="stats-row stats-row-5" id="dash-stats">
+          <div class="stat-card">
+            <div class="stat-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            <div class="stat-number" id="d-users">—</div>
+            <div class="stat-label">Total Users</div>
+            <div class="stat-sub" id="d-users-sub"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+            <div class="stat-number" id="d-courses">—</div>
+            <div class="stat-label">Active Courses</div>
+            <div class="stat-sub" id="d-courses-sub"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg></div>
+            <div class="stat-number" id="d-enrollments">—</div>
+            <div class="stat-label">Enrollments</div>
+            <div class="stat-sub" id="d-enroll-sub"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="stat-number" id="d-revenue">—</div>
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-sub" id="d-rev-sub"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+            <div class="stat-number" id="d-emails">—</div>
+            <div class="stat-label">Emails Sent</div>
+            <div class="stat-sub" id="d-storage-sub"></div>
+          </div>
+        </div>
 
+        <div class="grid-2" style="margin-bottom:24px;">
+          <div class="chart-wrap" id="revenue-chart-wrap">
+            <div class="chart-title">Monthly Revenue</div>
+            <div class="bar-chart" id="revenue-chart">
+              <div style="text-align:center;padding:40px 0;color:var(--text-3);font-size:13px;width:100%;">Loading…</div>
+            </div>
+          </div>
+          <div class="chart-wrap" id="users-chart-wrap">
+            <div class="chart-title">User Growth</div>
+            <div class="bar-chart" id="users-chart">
+              <div style="text-align:center;padding:40px 0;color:var(--text-3);font-size:13px;width:100%;">Loading…</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <div class="config-card-title">Recent Activity</div>
+          <div class="activity-feed" id="activity-feed">
+            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ USERS TAB ═══════════ -->
+      <div class="tab-panel" id="tab-users">
+        <div class="config-card">
+          <div class="config-card-title">User Management</div>
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <div class="search-box">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="user-search" placeholder="Search users…" oninput="filterUsers(this.value)">
+              </div>
+              <select class="filter-select" id="user-role-filter" onchange="filterUsers(document.getElementById('user-search').value)">
+                <option value="">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="instructor">Instructor</option>
+                <option value="teaching_assistant">Teaching Assistant</option>
+                <option value="student">Student</option>
+              </select>
+              <span style="font-size:13px;color:var(--text-3);" id="users-count-label">Loading…</span>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-primary btn-sm" onclick="openCreateUserModal()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add User
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap" id="users-table-wrap">
+            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ COURSES TAB ═══════════ -->
+      <div class="tab-panel" id="tab-courses">
+        <div class="config-card">
+          <div class="config-card-title">Course Oversight</div>
+          <div class="config-card-subtitle">Review, approve, and manage all courses on the platform.</div>
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <div class="search-box">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="course-search" placeholder="Search courses…" oninput="filterCourses(this.value)">
+              </div>
+              <select class="filter-select" id="course-status-filter" onchange="filterCourses(document.getElementById('course-search').value)">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="draft">Draft</option>
+                <option value="archived">Archived</option>
+              </select>
+              <span style="font-size:13px;color:var(--text-3);" id="courses-count-label">Loading…</span>
+            </div>
+          </div>
+          <div class="table-wrap" id="courses-table-wrap">
+            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ FINANCIAL TAB ═══════════ -->
+      <div class="tab-panel" id="tab-financial">
+        <div class="stats-row" id="fin-stats">
+          <div class="stat-card">
+            <div class="stat-number" id="fin-total">—</div>
+            <div class="stat-label">Total Revenue</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="fin-month">—</div>
+            <div class="stat-label">This Month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="fin-pending">—</div>
+            <div class="stat-label">Pending</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="fin-txns">—</div>
+            <div class="stat-label">Transactions</div>
+          </div>
+        </div>
+        <div class="config-card">
+          <div class="config-card-title">Payment History</div>
+          <div class="table-wrap" id="payments-table-wrap">
+            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ ANNOUNCEMENTS TAB ═══════════ -->
+      <div class="tab-panel" id="tab-announcements">
+        <div class="config-card">
+          <div class="config-card-title">Platform Announcements</div>
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <span style="font-size:13px;color:var(--text-3);" id="ann-count-label">Loading…</span>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-outline btn-sm" onclick="openBroadcastModal()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Send System Notification
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="openCreateAnnouncementModal()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Announcement
+              </button>
+            </div>
+          </div>
+          <div id="announcements-list">
+            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ GENERAL / SETTINGS TAB ═══════════ -->
+      <div class="tab-panel" id="tab-general">
+        <div class="config-card">
+          <div class="config-card-title">Platform Configuration</div>
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label">School / Platform Name</label>
@@ -803,7 +1137,6 @@
               <input class="form-input" id="gen-logo-url" type="text" placeholder="https://yourschool.com/logo.png">
             </div>
           </div>
-
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label">Timezone</label>
@@ -827,7 +1160,6 @@
               <input class="form-input" id="gen-max-upload" type="number" placeholder="100" value="100" min="1" max="2000">
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" style="margin-bottom:10px;">Allowed File Types</label>
             <div class="check-grid">
@@ -840,7 +1172,6 @@
               <label class="check-item"><input type="checkbox" id="ft-jpg" value="jpg" checked> JPG</label>
             </div>
           </div>
-
           <div class="toggle-wrap" style="margin-top:6px;">
             <label class="toggle">
               <input type="checkbox" id="gen-maintenance">
@@ -848,7 +1179,6 @@
             </label>
             <span class="toggle-label">Maintenance Mode — shows a maintenance notice to non-admin users</span>
           </div>
-
           <div class="btn-row">
             <button class="btn btn-primary" id="gen-save-btn" onclick="saveGeneral()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -858,94 +1188,62 @@
         </div>
       </div>
 
-      <!-- ──────────────────── S3 Tab ──────────────────── -->
+      <!-- ═══════════ S3 STORAGE TAB ═══════════ -->
       <div class="tab-panel" id="tab-s3">
-        <div class="guide-wrap">
-          <div class="guide-title">Setup Guide — AWS S3</div>
-
+        <div style="margin-bottom:24px;">
+          <div class="config-card-title" style="margin-bottom:14px;">Setup Guide — AWS S3</div>
           <div class="accordion-item open" id="acc-s3-1">
             <div class="accordion-header" onclick="toggleAccordion('acc-s3-1')">
               <div class="accordion-num">1</div>
               <div class="accordion-label">Create AWS Account</div>
               <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <div class="accordion-body">
-              Go to <code>aws.amazon.com</code>, create an account or sign in with an existing one. You'll need a valid email address, phone number, and a credit card (free tier is sufficient for initial setup).
-            </div>
+            <div class="accordion-body">Go to <code>aws.amazon.com</code>, create an account or sign in. You'll need a valid email, phone, and credit card (free tier sufficient).</div>
           </div>
-
           <div class="accordion-item" id="acc-s3-2">
             <div class="accordion-header" onclick="toggleAccordion('acc-s3-2')">
               <div class="accordion-num">2</div>
               <div class="accordion-label">Create S3 Bucket</div>
               <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <div class="accordion-body">
-              Go to <strong>S3 → Create Bucket</strong>. Choose a unique globally-unique name (e.g. <code>tfr-lms-media</code>). Select your preferred region. Uncheck <strong>"Block all public access"</strong> if you want to serve media files publicly without signed URLs. Acknowledge the warning and confirm creation.
-            </div>
+            <div class="accordion-body">Go to <strong>S3 → Create Bucket</strong>. Choose a unique name (e.g. <code>tfr-lms-media</code>). Select your region. Uncheck <strong>"Block all public access"</strong> if serving files publicly.</div>
           </div>
-
           <div class="accordion-item" id="acc-s3-3">
             <div class="accordion-header" onclick="toggleAccordion('acc-s3-3')">
               <div class="accordion-num">3</div>
-              <div class="accordion-label">Create IAM User</div>
+              <div class="accordion-label">Create IAM User &amp; Get Keys</div>
               <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <div class="accordion-body">
-              Go to <strong>IAM → Users → Add User</strong>. Give the user a name like <code>tfr-lms-s3-user</code>. Under <strong>Permissions</strong>, choose "Attach policies directly" and attach the <code>AmazonS3FullAccess</code> policy. After creation, go to <strong>Security credentials</strong> and click <strong>Create access key</strong>. Download the CSV — you won't be able to see the secret again.
-            </div>
+            <div class="accordion-body">Go to <strong>IAM → Users → Add User</strong>. Attach <code>AmazonS3FullAccess</code> policy. Create access key and download CSV.</div>
           </div>
-
           <div class="accordion-item" id="acc-s3-4">
             <div class="accordion-header" onclick="toggleAccordion('acc-s3-4')">
               <div class="accordion-num">4</div>
               <div class="accordion-label">Configure CORS</div>
               <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <div class="accordion-body">
-              In your S3 bucket, go to <strong>Permissions → Cross-origin resource sharing (CORS)</strong> and paste the following JSON:
-              <pre>[{"AllowedHeaders":["*"],"AllowedMethods":["GET","PUT","POST","DELETE"],"AllowedOrigins":["*"],"ExposeHeaders":[]}]</pre>
-              For production, replace <code>"*"</code> in AllowedOrigins with your actual domain.
-            </div>
-          </div>
-
-          <div class="accordion-item" id="acc-s3-5">
-            <div class="accordion-header" onclick="toggleAccordion('acc-s3-5')">
-              <div class="accordion-num">5</div>
-              <div class="accordion-label">Enter Keys Below</div>
-              <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            <div class="accordion-body">
-              Paste your <strong>Access Key ID</strong> and <strong>Secret Access Key</strong> from the downloaded CSV into the configuration form below, fill in your bucket name and region, then click <strong>Test Connection</strong> to verify everything is working before saving.
-            </div>
+            <div class="accordion-body">In S3 bucket → <strong>Permissions → CORS</strong>:<pre>[{"AllowedHeaders":["*"],"AllowedMethods":["GET","PUT","POST","DELETE"],"AllowedOrigins":["*"],"ExposeHeaders":[]}]</pre></div>
           </div>
         </div>
 
-        <!-- S3 Config Form -->
         <div class="config-card">
           <div class="config-card-title">S3 Storage Configuration</div>
-
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label">AWS Access Key ID</label>
               <div class="input-wrap">
                 <input class="form-input" id="s3-access-key" type="text" placeholder="AKIAIOSFODNN7EXAMPLE">
-                <button class="eye-btn" onclick="toggleEye('s3-access-key', this)" title="Toggle visibility">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
+                <button class="eye-btn" onclick="toggleEye('s3-access-key', this)" title="Toggle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
               </div>
             </div>
             <div class="form-group">
               <label class="form-label">AWS Secret Access Key</label>
               <div class="input-wrap">
                 <input class="form-input" id="s3-secret-key" type="password" placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLE">
-                <button class="eye-btn" onclick="toggleEye('s3-secret-key', this)" title="Toggle visibility">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
+                <button class="eye-btn" onclick="toggleEye('s3-secret-key', this)" title="Toggle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
               </div>
             </div>
           </div>
-
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label">AWS Region</label>
@@ -962,7 +1260,6 @@
               <input class="form-input" id="s3-bucket" type="text" placeholder="tfr-lms-media">
             </div>
           </div>
-
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label">Custom CDN URL <span style="font-weight:400;color:var(--text-3);text-transform:none;letter-spacing:0;">(optional)</span></label>
@@ -973,15 +1270,13 @@
               <input class="form-input" id="s3-path-prefix" type="text" value="tfr-lms/" placeholder="tfr-lms/">
             </div>
           </div>
-
           <div class="toggle-wrap">
             <label class="toggle">
               <input type="checkbox" id="s3-public-access">
               <div class="toggle-track"></div>
             </label>
-            <span class="toggle-label">Enable Public Access (serve media files without signed URLs)</span>
+            <span class="toggle-label">Enable Public Access (serve media without signed URLs)</span>
           </div>
-
           <div class="btn-row">
             <button class="btn btn-outline" id="s3-test-btn" onclick="testS3()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
@@ -995,60 +1290,38 @@
         </div>
       </div>
 
-      <!-- ──────────────────── SMTP Tab ──────────────────── -->
+      <!-- ═══════════ SMTP TAB ═══════════ -->
       <div class="tab-panel" id="tab-smtp">
-        <div class="guide-wrap">
-          <div class="guide-title">Setup Guide — Email Delivery</div>
-
+        <div style="margin-bottom:24px;">
+          <div class="config-card-title" style="margin-bottom:14px;">Setup Guide — Email Delivery</div>
           <div class="accordion-item open" id="acc-smtp-1">
             <div class="accordion-header" onclick="toggleAccordion('acc-smtp-1')">
               <div class="accordion-num">1</div>
               <div class="accordion-label">Choose Email Provider</div>
               <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <div class="accordion-body">
-              Popular SMTP options: <strong>Gmail</strong> (<code>smtp.gmail.com:587</code>), <strong>SendGrid</strong> (<code>smtp.sendgrid.net:587</code>), <strong>Mailgun</strong> (<code>smtp.mailgun.org:587</code>), and <strong>AWS SES</strong> (<code>email-smtp.us-east-1.amazonaws.com:587</code>). For production, SendGrid or AWS SES are recommended for deliverability.
-            </div>
+            <div class="accordion-body">Popular SMTP options: <strong>Gmail</strong> (<code>smtp.gmail.com:587</code>), <strong>SendGrid</strong> (<code>smtp.sendgrid.net:587</code>), <strong>Mailgun</strong> (<code>smtp.mailgun.org:587</code>), <strong>AWS SES</strong>.</div>
           </div>
-
           <div class="accordion-item" id="acc-smtp-2">
             <div class="accordion-header" onclick="toggleAccordion('acc-smtp-2')">
               <div class="accordion-num">2</div>
               <div class="accordion-label">Gmail App Password Setup</div>
               <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <div class="accordion-body">
-              Enable 2FA on your Google account first. Then go to <code>myaccount.google.com</code> → <strong>Security → App Passwords</strong>. Click <strong>Generate password</strong> for "Mail" and your device. Use your Gmail address as the SMTP username and the generated 16-character password as the SMTP password. Note: regular Gmail passwords will not work.
-            </div>
+            <div class="accordion-body">Enable 2FA first. Then <code>myaccount.google.com</code> → <strong>Security → App Passwords</strong> → generate 16-char password.</div>
           </div>
-
           <div class="accordion-item" id="acc-smtp-3">
             <div class="accordion-header" onclick="toggleAccordion('acc-smtp-3')">
               <div class="accordion-num">3</div>
-              <div class="accordion-label">SendGrid &amp; Other Providers</div>
-              <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            <div class="accordion-body">
-              For <strong>SendGrid</strong>: Log in → go to <strong>Settings → API Keys → Create API Key</strong>. Give it "Full Access" or "Mail Send" scope. Use the literal string <code>apikey</code> as the SMTP username and your generated API key as the SMTP password. For <strong>Mailgun</strong>: go to Sending → Domains and find your SMTP credentials under domain settings.
-            </div>
-          </div>
-
-          <div class="accordion-item" id="acc-smtp-4">
-            <div class="accordion-header" onclick="toggleAccordion('acc-smtp-4')">
-              <div class="accordion-num">4</div>
               <div class="accordion-label">Test Your Configuration</div>
               <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <div class="accordion-body">
-              After saving your configuration, use the <strong>Send Test Email</strong> button below to send a test message to your inbox. If the test fails, double-check your SMTP host, port, and credentials. Ensure your firewall allows outbound connections on port 587 or 465.
-            </div>
+            <div class="accordion-body">After saving, use <strong>Send Test Email</strong> button. Check host, port, and credentials if it fails.</div>
           </div>
         </div>
 
-        <!-- SMTP Config Form -->
         <div class="config-card">
           <div class="config-card-title">SMTP Configuration</div>
-
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label">SMTP Host</label>
@@ -1059,7 +1332,6 @@
               <input class="form-input" id="smtp-port" type="number" placeholder="587" value="587">
             </div>
           </div>
-
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label">Encryption</label>
@@ -1074,17 +1346,13 @@
               <input class="form-input" id="smtp-username" type="text" placeholder="you@yourdomain.com">
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label">SMTP Password</label>
             <div class="input-wrap">
               <input class="form-input" id="smtp-password" type="password" placeholder="Your SMTP password or API key">
-              <button class="eye-btn" onclick="toggleEye('smtp-password', this)" title="Toggle visibility">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
+              <button class="eye-btn" onclick="toggleEye('smtp-password', this)" title="Toggle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
             </div>
           </div>
-
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label">From Name</label>
@@ -1095,12 +1363,10 @@
               <input class="form-input" id="smtp-from-email" type="email" placeholder="noreply@yourschool.com">
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label">Reply-To Email <span style="font-weight:400;color:var(--text-3);text-transform:none;letter-spacing:0;">(optional)</span></label>
             <input class="form-input" id="smtp-reply-to" type="email" placeholder="support@yourschool.com">
           </div>
-
           <div class="btn-row">
             <button class="btn btn-outline" id="smtp-test-btn" onclick="openSmtpTestModal()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -1114,87 +1380,196 @@
         </div>
       </div>
 
-      <!-- ──────────────────── Users Tab ──────────────────── -->
-      <div class="tab-panel" id="tab-users">
-        <div class="config-card">
-          <div class="config-card-title">User Management</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-            <div style="font-size:13px;color:var(--text-3);" id="users-count-label">Loading users…</div>
-            <div style="display:flex;gap:8px;">
-              <div style="position:relative;">
-                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="user-search" placeholder="Search users…" oninput="filterUsers(this.value)"
-                  style="background:var(--bg-2);border:1px solid rgba(200,168,75,0.15);border-radius:8px;padding:8px 12px 8px 32px;font-size:13px;font-family:var(--sans);color:var(--text);outline:none;width:220px;">
-              </div>
-            </div>
-          </div>
-          <div id="users-table-wrap">
-            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ──────────────────── Roles Tab ──────────────────── -->
+      <!-- ═══════════ ROLES TAB ═══════════ -->
       <div class="tab-panel" id="tab-roles">
         <div class="config-card">
           <div class="config-card-title">Roles &amp; Permissions</div>
           <p style="font-size:13px;color:var(--text-3);margin-bottom:22px;">Define what each role can access across The Foundation Room platform.</p>
 
-          <!-- Role: Admin -->
-          <div style="background:var(--bg-2);border:1px solid rgba(200,168,75,0.12);border-radius:10px;padding:18px;margin-bottom:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="role-card">
+            <div class="role-header">
               <div>
-                <div style="font-size:14px;font-weight:600;color:var(--gold);">Admin</div>
-                <div style="font-size:12px;color:var(--text-3);margin-top:2px;">Full platform access</div>
+                <div class="role-name">Admin</div>
+                <div class="role-desc">Full platform access</div>
               </div>
-              <span style="background:rgba(200,168,75,0.15);color:var(--gold);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid rgba(200,168,75,0.2);">System Role</span>
+              <span class="badge badge-gold">System Role</span>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;">
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">Manage Users</span>
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">Manage Courses</span>
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">Admin Panel Access</span>
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">View Reports</span>
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">Billing Access</span>
+            <div class="perm-tags">
+              <span class="perm-tag">Manage Users</span>
+              <span class="perm-tag">Manage All Courses</span>
+              <span class="perm-tag">Admin Panel Access</span>
+              <span class="perm-tag">View Reports</span>
+              <span class="perm-tag">Billing Access</span>
+              <span class="perm-tag">Platform Config</span>
+              <span class="perm-tag">Content Moderation</span>
             </div>
           </div>
 
-          <!-- Role: Instructor -->
-          <div style="background:var(--bg-2);border:1px solid rgba(200,168,75,0.12);border-radius:10px;padding:18px;margin-bottom:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="role-card">
+            <div class="role-header">
               <div>
-                <div style="font-size:14px;font-weight:600;color:var(--text);">Instructor</div>
-                <div style="font-size:12px;color:var(--text-3);margin-top:2px;">Create and manage own courses</div>
+                <div class="role-name" style="color:var(--text);">Instructor</div>
+                <div class="role-desc">Create and manage own courses</div>
               </div>
-              <span style="background:rgba(240,230,211,0.07);color:var(--text-2);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid rgba(240,230,211,0.1);">Default Role</span>
+              <span class="badge badge-muted">Default Role</span>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;">
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">Create Courses</span>
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">Manage Own Courses</span>
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">View Enrollments</span>
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">Grade Assignments</span>
+            <div class="perm-tags">
+              <span class="perm-tag">Create Courses</span>
+              <span class="perm-tag">Manage Own Courses</span>
+              <span class="perm-tag">View Enrollments</span>
+              <span class="perm-tag">Grade Assignments</span>
+              <span class="perm-tag">Send Announcements</span>
+              <span class="perm-tag">Manage Sheet Music</span>
             </div>
           </div>
 
-          <!-- Role: Student -->
-          <div style="background:var(--bg-2);border:1px solid rgba(200,168,75,0.12);border-radius:10px;padding:18px;margin-bottom:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="role-card">
+            <div class="role-header">
               <div>
-                <div style="font-size:14px;font-weight:600;color:var(--text);">Student</div>
-                <div style="font-size:12px;color:var(--text-3);margin-top:2px;">Enrolled learner access</div>
+                <div class="role-name" style="color:var(--text);">Teaching Assistant</div>
+                <div class="role-desc">Assist instructors with assigned courses</div>
+              </div>
+              <span class="badge badge-muted">Scoped Role</span>
+            </div>
+            <div class="perm-tags">
+              <span class="perm-tag">View Assigned Courses</span>
+              <span class="perm-tag">Grade Assignments</span>
+              <span class="perm-tag">Send Announcements</span>
+              <span class="perm-tag">Manage Resources</span>
+            </div>
+          </div>
+
+          <div class="role-card">
+            <div class="role-header">
+              <div>
+                <div class="role-name" style="color:var(--text);">Student</div>
+                <div class="role-desc">Enrolled learner access</div>
               </div>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;">
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">View Enrolled Courses</span>
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">Submit Assignments</span>
-              <span style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.15);color:var(--text-2);font-size:11px;padding:3px 10px;border-radius:6px;">Access Archive</span>
+            <div class="perm-tags">
+              <span class="perm-tag">View Enrolled Courses</span>
+              <span class="perm-tag">Submit Assignments</span>
+              <span class="perm-tag">Access Archive</span>
+              <span class="perm-tag">Take Quizzes</span>
+              <span class="perm-tag">Practice Log</span>
+              <span class="perm-tag">Download Resources</span>
             </div>
           </div>
 
           <div class="btn-row">
-            <button class="btn btn-primary" onclick="toast('Permissions saved.', 'success')">
+            <button class="btn btn-primary" id="save-perms-btn" onclick="savePermissions()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
               Save Permissions
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ SUBSCRIPTIONS TAB ═══════════ -->
+      <div class="tab-panel" id="tab-subscriptions">
+        <div class="stats-row" id="sub-stats">
+          <div class="stat-card">
+            <div class="stat-number" id="sub-active">—</div>
+            <div class="stat-label">Active Subscribers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="sub-mrr">—</div>
+            <div class="stat-label">MRR</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="sub-cancelled">—</div>
+            <div class="stat-label">Cancelled</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="sub-expired">—</div>
+            <div class="stat-label">Expired</div>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <div class="toolbar" style="margin-bottom:18px;">
+            <div class="toolbar-left">
+              <div class="config-card-title" style="margin-bottom:0;">Subscription Plans</div>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-primary btn-sm" onclick="openPlanModal()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Plan
+              </button>
+            </div>
+          </div>
+          <div id="plans-list">
+            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <div class="toolbar" style="margin-bottom:18px;">
+            <div class="toolbar-left">
+              <div class="config-card-title" style="margin-bottom:0;">Subscribers</div>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-outline btn-sm" onclick="openAssignSubModal()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Assign Plan
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap" id="subs-table-wrap">
+            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ MODERATION TAB ═══════════ -->
+      <div class="tab-panel" id="tab-moderation">
+        <div class="stats-row" id="mod-stats">
+          <div class="stat-card">
+            <div class="stat-number" id="mod-pending">—</div>
+            <div class="stat-label">Pending</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="mod-resolved">—</div>
+            <div class="stat-label">Resolved</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="mod-dismissed">—</div>
+            <div class="stat-label">Dismissed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="mod-storage-total">—</div>
+            <div class="stat-label">Total Storage</div>
+            <div class="stat-sub" id="mod-storage-sub">—</div>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <div class="toolbar" style="margin-bottom:18px;">
+            <div class="toolbar-left">
+              <div class="config-card-title" style="margin-bottom:0;">Content Moderation Queue</div>
+              <select class="filter-select" id="mod-status-filter" onchange="loadFlags()">
+                <option value="pending">Pending</option>
+                <option value="resolved">Resolved</option>
+                <option value="dismissed">Dismissed</option>
+                <option value="">All</option>
+              </select>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-outline btn-sm" onclick="openFlagModal()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Flag Content
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap" id="flags-table-wrap">
+            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <div class="config-card-title">Storage Breakdown</div>
+          <div id="storage-breakdown">
+            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
           </div>
         </div>
       </div>
@@ -1203,55 +1578,286 @@
   </div>
 </div>
 
+<!-- ═══════ MODALS ═══════ -->
+
 <!-- SMTP Test Modal -->
-<div class="mini-modal-overlay" id="smtp-test-modal" style="display:none;">
-  <div class="mini-modal">
-    <div class="mini-modal-title">Send Test Email</div>
+<div class="modal-overlay" id="smtp-test-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">Send Test Email</div>
     <div class="form-group">
       <label class="form-label">Recipient Email</label>
       <input class="form-input" id="smtp-test-email" type="email" placeholder="you@yourdomain.com">
     </div>
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="btn btn-primary" style="flex:1;" id="smtp-test-send-btn" onclick="sendTestEmail()">Send Test</button>
-      <button class="btn btn-ghost" onclick="document.getElementById('smtp-test-modal').style.display='none'">Cancel</button>
+      <button class="btn btn-ghost" onclick="closeModal('smtp-test-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal-overlay" id="create-user-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">Create New User</div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">First Name</label>
+        <input class="form-input" id="new-first-name" type="text" placeholder="John">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name</label>
+        <input class="form-input" id="new-last-name" type="text" placeholder="Doe">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" id="new-email" type="email" placeholder="john@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="new-password" type="password" placeholder="Min 6 characters">
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select class="form-select" id="new-role">
+          <option value="student">Student</option>
+          <option value="instructor">Instructor</option>
+          <option value="teaching_assistant">Teaching Assistant</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Instrument <span style="font-weight:400;color:var(--text-3);text-transform:none;letter-spacing:0;">(optional)</span></label>
+        <input class="form-input" id="new-instrument" type="text" placeholder="e.g. Sitar, Vocals">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button class="btn btn-primary" style="flex:1;" id="create-user-btn" onclick="createUser()">Create User</button>
+      <button class="btn btn-ghost" onclick="closeModal('create-user-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Announcement Modal -->
+<div class="modal-overlay" id="create-ann-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">New Announcement</div>
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input class="form-input" id="ann-title" type="text" placeholder="Announcement title…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Body</label>
+      <textarea class="form-input form-textarea" id="ann-body" placeholder="Write your announcement…" rows="4" style="resize:vertical;min-height:100px;"></textarea>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Course <span style="font-weight:400;color:var(--text-3);text-transform:none;letter-spacing:0;">(optional)</span></label>
+        <select class="form-select" id="ann-course">
+          <option value="">Platform-wide</option>
+        </select>
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;justify-content:center;padding-top:18px;">
+        <div class="toggle-wrap" style="margin-bottom:8px;">
+          <label class="toggle">
+            <input type="checkbox" id="ann-pinned">
+            <div class="toggle-track"></div>
+          </label>
+          <span class="toggle-label">Pin announcement</span>
+        </div>
+        <div class="toggle-wrap" style="margin-bottom:0;">
+          <label class="toggle">
+            <input type="checkbox" id="ann-email">
+            <div class="toggle-track"></div>
+          </label>
+          <span class="toggle-label">Send email</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button class="btn btn-primary" style="flex:1;" id="create-ann-btn" onclick="createAnnouncement()">Publish Announcement</button>
+      <button class="btn btn-ghost" onclick="closeModal('create-ann-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Broadcast Notification Modal -->
+<div class="modal-overlay" id="broadcast-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">Send System Notification</div>
+    <p style="font-size:13px;color:var(--text-3);margin-bottom:18px;">Push an in-app notification to users. They will see it in their notification bell.</p>
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input class="form-input" id="bc-title" type="text" placeholder="e.g. Scheduled maintenance tonight">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message</label>
+      <textarea class="form-input form-textarea" id="bc-body" placeholder="Details…" rows="3" style="resize:vertical;min-height:80px;"></textarea>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Target Audience</label>
+        <select class="form-select" id="bc-target">
+          <option value="all">All users</option>
+          <option value="students">Students only</option>
+          <option value="instructors">Instructors only</option>
+          <option value="admins">Admins only</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Link <span style="font-weight:400;color:var(--text-3);text-transform:none;letter-spacing:0;">(optional)</span></label>
+        <input class="form-input" id="bc-link" type="text" placeholder="/courses/some-slug">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button class="btn btn-primary" style="flex:1;" id="bc-send-btn" onclick="sendBroadcast()">Send Notification</button>
+      <button class="btn btn-ghost" onclick="closeModal('broadcast-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Plan Editor Modal -->
+<div class="modal-overlay" id="plan-modal" style="display:none;">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-title" id="plan-modal-title">New Subscription Plan</div>
+    <input type="hidden" id="plan-id">
+    <div class="form-group">
+      <label class="form-label">Plan Name</label>
+      <input class="form-input" id="plan-name" type="text" placeholder="e.g. Sadhak / Shishya / Acharya">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-input form-textarea" id="plan-description" rows="2" placeholder="Short pitch shown to students…"></textarea>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Price (₹)</label>
+        <input class="form-input" id="plan-price" type="number" min="0" placeholder="999">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Billing Period</label>
+        <select class="form-select" id="plan-period">
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="lifetime">Lifetime</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Features <span style="font-weight:400;color:var(--text-3);text-transform:none;letter-spacing:0;">(one per line)</span></label>
+      <textarea class="form-input form-textarea" id="plan-features" rows="4" placeholder="Unlimited courses&#10;All masterclasses&#10;Email support"></textarea>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Sort Order</label>
+        <input class="form-input" id="plan-sort" type="number" value="0">
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;padding-top:24px;">
+        <div class="toggle-wrap" style="margin-bottom:0;">
+          <label class="toggle">
+            <input type="checkbox" id="plan-active" checked>
+            <div class="toggle-track"></div>
+          </label>
+          <span class="toggle-label">Active (visible to users)</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button class="btn btn-primary" style="flex:1;" id="plan-save-btn" onclick="savePlan()">Save Plan</button>
+      <button class="btn btn-ghost" onclick="closeModal('plan-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Assign Subscription Modal -->
+<div class="modal-overlay" id="assign-sub-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">Assign Subscription</div>
+    <div class="form-group">
+      <label class="form-label">User</label>
+      <select class="form-select" id="assign-user-id"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Plan</label>
+      <select class="form-select" id="assign-plan-id"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Expires At <span style="font-weight:400;color:var(--text-3);text-transform:none;letter-spacing:0;">(optional)</span></label>
+      <input class="form-input" id="assign-expires" type="date">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button class="btn btn-primary" style="flex:1;" id="assign-sub-btn" onclick="assignSubscription()">Assign</button>
+      <button class="btn btn-ghost" onclick="closeModal('assign-sub-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Flag Content Modal -->
+<div class="modal-overlay" id="flag-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">Flag Content for Review</div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-select" id="flag-type">
+          <option value="course">Course</option>
+          <option value="announcement">Announcement</option>
+          <option value="user">User</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Content ID</label>
+        <input class="form-input" id="flag-content-id" type="number" placeholder="e.g. 5">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reason</label>
+      <textarea class="form-input form-textarea" id="flag-reason" rows="3" placeholder="Why is this being flagged?"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button class="btn btn-primary" style="flex:1;" id="flag-create-btn" onclick="createFlag()">Create Flag</button>
+      <button class="btn btn-ghost" onclick="closeModal('flag-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-overlay" id="confirm-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title" id="confirm-title">Confirm Action</div>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:20px;line-height:1.6;" id="confirm-body">Are you sure?</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-action-btn">Delete</button>
     </div>
   </div>
 </div>
 
 <div class="toast-container" id="toast-container"></div>
 
-<script src="/assets/js/api.js"></script>
-<script src="/assets/js/auth-guard.js"></script>
+<script src="/assets/js/api.js?v=2"></script>
+<script src="/assets/js/auth-guard.js?v=2"></script>
 <script>requireRole(['admin']);</script>
+<script src="/assets/js/admin-sidebar.js?v=2"></script>
 <script>
   // ── GSAP init ──
   gsap.registerPlugin(ScrollTrigger);
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Page load staggered entrance
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
     tl.from('#sidebar', { x: -30, opacity: 0, duration: 0.6 })
       .from('#topbar', { y: -20, opacity: 0, duration: 0.45 }, '-=0.3')
       .from('#page-header', { y: 20, opacity: 0, duration: 0.5 }, '-=0.25')
-      .from('.stat-card', { y: 30, opacity: 0, stagger: 0.08, duration: 0.6 }, '-=0.3')
       .from('#tab-bar', { y: 15, opacity: 0, duration: 0.4 }, '-=0.2')
-      .from('.config-card, .guide-wrap', { y: 20, opacity: 0, duration: 0.5 }, '-=0.15');
+      .from('.stat-card', { y: 30, opacity: 0, stagger: 0.06, duration: 0.5 }, '-=0.2');
 
-    // Focus ring glow on inputs
-    document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => {
-      el.addEventListener('focus', () => {
-        gsap.to(el, { boxShadow: '0 0 0 3px rgba(200,168,75,0.15)', duration: 0.2 });
-      });
-      el.addEventListener('blur', () => {
-        gsap.to(el, { boxShadow: '0 0 0 0px rgba(200,168,75,0)', duration: 0.2 });
-      });
-    });
-
+    loadDashboard();
     loadConfig();
-    loadStats();
   });
 
-  // ── Toast ──
+  // ═══════════ Toast ═══════════
   function toast(msg, type = 'success') {
     const tc = document.getElementById('toast-container');
     const t = document.createElement('div');
@@ -1270,7 +1876,7 @@
     }, 4000);
   }
 
-  // ── Tab switching with GSAP ──
+  // ═══════════ Tab switching ═══════════
   function switchTab(name, btn) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -1279,22 +1885,26 @@
     panel.classList.add('active');
     gsap.from(panel, { opacity: 0, y: 10, duration: 0.3, ease: 'power2.out' });
 
-    // Load users if switching to users tab
     if (name === 'users') loadUsers();
+    if (name === 'courses') loadCourses();
+    if (name === 'financial') loadPayments();
+    if (name === 'announcements') loadAnnouncements();
+    if (name === 'subscriptions') loadSubscriptions();
+    if (name === 'moderation') { loadFlags(); loadStorageBreakdown(); }
+    if (name === 'roles') loadPermissions();
   }
 
-  // ── Accordion ──
+  // ═══════════ Accordion ═══════════
   function toggleAccordion(id) {
     const item = document.getElementById(id);
     const wasOpen = item.classList.contains('open');
     item.classList.toggle('open');
     if (!wasOpen) {
-      const body = item.querySelector('.accordion-body');
-      gsap.from(body, { opacity: 0, y: -5, duration: 0.2, ease: 'power2.out' });
+      gsap.from(item.querySelector('.accordion-body'), { opacity: 0, y: -5, duration: 0.2 });
     }
   }
 
-  // ── Eye toggle ──
+  // ═══════════ Eye toggle ═══════════
   function toggleEye(inputId, btn) {
     const inp = document.getElementById(inputId);
     const isPassword = inp.type === 'password';
@@ -1304,26 +1914,475 @@
       : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
   }
 
-  // ── Load stats ──
-  async function loadStats() {
+  // ═══════════ Modal helpers ═══════════
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  function openModal(id) {
+    document.getElementById(id).style.display = 'flex';
+    gsap.from(document.querySelector('#' + id + ' .modal'), { scale: 0.95, opacity: 0, duration: 0.2 });
+  }
+  // Close modal on backdrop click
+  document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
+  });
+
+  // ═══════════ Formatting helpers ═══════════
+  function fmtPaise(paise) {
+    const r = (paise || 0) / 100;
+    return '₹' + r.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function fmtTimeAgo(d) {
+    if (!d) return '';
+    const diff = Date.now() - new Date(d).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 2) return 'Just now';
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return days + 'd ago';
+    return fmtDate(d);
+  }
+  function esc(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ═══════════ DASHBOARD ═══════════
+  async function loadDashboard() {
     try {
       const data = await api.get('/api/admin/stats');
-      if (data.total_users !== undefined) document.getElementById('stat-users').textContent = data.total_users;
-      if (data.active_courses !== undefined) document.getElementById('stat-courses').textContent = data.active_courses;
-      if (data.storage_used !== undefined) document.getElementById('stat-storage').textContent = data.storage_used;
-      if (data.emails_sent !== undefined) document.getElementById('stat-emails').textContent = data.emails_sent;
+
+      // Stat cards
+      document.getElementById('d-users').textContent = data.total_users || 0;
+      document.getElementById('d-users-sub').innerHTML = `<span class="up">+${data.new_users_month || 0}</span> this month · ${data.total_students || 0} students · ${data.total_instructors || 0} instructors`;
+      document.getElementById('d-courses').textContent = data.active_courses || 0;
+      document.getElementById('d-courses-sub').textContent = `${data.total_courses || 0} total courses`;
+      document.getElementById('d-enrollments').textContent = data.total_enrollments || 0;
+      document.getElementById('d-enroll-sub').innerHTML = `<span class="up">+${data.new_enrollments_month || 0}</span> this month`;
+      document.getElementById('d-revenue').textContent = fmtPaise(data.total_revenue);
+      document.getElementById('d-rev-sub').innerHTML = `${fmtPaise(data.month_revenue)} this month · ${fmtPaise(data.pending_revenue)} pending`;
+      document.getElementById('d-emails').textContent = data.emails_sent || 0;
+      document.getElementById('d-storage-sub').textContent = `Storage: ${data.storage_used || '0 KB'}`;
+
+      // Revenue chart
+      renderBarChart('revenue-chart', (data.revenue_chart || []).map(r => ({
+        label: r.month ? r.month.split('-')[1] : '',
+        value: (r.revenue || 0) / 100,
+        display: fmtPaise(r.revenue)
+      })));
+
+      // User growth chart
+      renderBarChart('users-chart', (data.user_growth || []).map(r => ({
+        label: r.month ? r.month.split('-')[1] : '',
+        value: r.count || 0,
+        display: String(r.count || 0)
+      })));
+
+      // Activity feed
+      const feed = document.getElementById('activity-feed');
+      if ((data.recent_activity || []).length === 0) {
+        feed.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>No recent activity</p></div>';
+      } else {
+        feed.innerHTML = data.recent_activity.map(a => `
+          <div class="activity-item">
+            <div class="activity-dot ${a.type === 'enrollment' ? 'enroll' : 'user'}"></div>
+            <div style="flex:1;">
+              <div class="activity-text">
+                ${a.type === 'enrollment'
+                  ? `<strong>${esc(a.user_name)}</strong> enrolled in <strong>${esc(a.course_title)}</strong>`
+                  : `<strong>${esc(a.user_name)}</strong> joined as <strong>${esc(a.course_title)}</strong>`}
+              </div>
+              <div class="activity-time">${fmtTimeAgo(a.time)}</div>
+            </div>
+          </div>
+        `).join('');
+        gsap.from(feed.querySelectorAll('.activity-item'), { opacity: 0, x: -8, stagger: 0.04, duration: 0.35 });
+      }
+
+      // Animate stat cards
+      gsap.from('#dash-stats .stat-card', { y: 20, opacity: 0, stagger: 0.06, duration: 0.5 });
     } catch (e) {
-      // Stats endpoint may not exist — leave dashes
+      document.getElementById('activity-feed').innerHTML = '<div class="empty-state"><p>Could not load dashboard data.</p></div>';
     }
   }
 
-  // ── Load existing config ──
+  function renderBarChart(containerId, items) {
+    const container = document.getElementById(containerId);
+    if (!items.length) {
+      container.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-3);font-size:13px;width:100%;">No data yet</div>';
+      return;
+    }
+    const maxVal = Math.max(...items.map(i => i.value), 1);
+    const monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    container.innerHTML = items.map(item => {
+      const pct = Math.max(4, (item.value / maxVal) * 100);
+      const label = monthNames[parseInt(item.label)] || item.label;
+      return `<div class="bar-col">
+        <div class="bar-value">${item.display}</div>
+        <div class="bar" style="height:${pct}%"></div>
+        <div class="bar-label">${label}</div>
+      </div>`;
+    }).join('');
+    gsap.from(container.querySelectorAll('.bar'), { height: 0, stagger: 0.08, duration: 0.6, ease: 'power2.out' });
+  }
+
+  // ═══════════ USERS ═══════════
+  let allUsers = [];
+  async function loadUsers() {
+    try {
+      const data = await api.get('/api/admin/users');
+      allUsers = data.users || [];
+      renderUsersTable(allUsers);
+    } catch (e) {
+      document.getElementById('users-table-wrap').innerHTML = '<div class="empty-state"><p>Could not load users.</p></div>';
+    }
+  }
+
+  function filterUsers(q) {
+    const roleFilter = document.getElementById('user-role-filter').value;
+    let filtered = allUsers.filter(u =>
+      ((u.name || '').toLowerCase().includes(q.toLowerCase()) ||
+       (u.email || '').toLowerCase().includes(q.toLowerCase()))
+    );
+    if (roleFilter) filtered = filtered.filter(u => u.role === roleFilter);
+    renderUsersTable(filtered);
+  }
+
+  function renderUsersTable(users) {
+    const wrap = document.getElementById('users-table-wrap');
+    document.getElementById('users-count-label').textContent = users.length + ' user' + (users.length !== 1 ? 's' : '');
+    if (!users.length) {
+      wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div><p>No users found.</p></div>';
+      return;
+    }
+    const roleBadge = (r) => {
+      const map = {
+        admin: 'badge-gold', instructor: 'badge-blue',
+        teaching_assistant: 'badge-green', student: 'badge-muted'
+      };
+      return `<span class="badge ${map[r] || 'badge-muted'}">${esc(r)}</span>`;
+    };
+    wrap.innerHTML = `<table>
+      <thead><tr>
+        <th>Name</th><th>Email</th><th>Role</th><th>Instrument</th><th>Enrollments</th><th>Joined</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${users.map(u => `<tr>
+          <td><strong>${esc(u.name || u.first_name + ' ' + u.last_name)}</strong></td>
+          <td>${esc(u.email)}</td>
+          <td>
+            <select class="filter-select" style="min-width:130px;" onchange="changeUserRole(${u.id}, this.value)" ${u.role === 'admin' ? 'disabled' : ''}>
+              <option value="student" ${u.role==='student'?'selected':''}>Student</option>
+              <option value="instructor" ${u.role==='instructor'?'selected':''}>Instructor</option>
+              <option value="teaching_assistant" ${u.role==='teaching_assistant'?'selected':''}>Teaching Assistant</option>
+              <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+            </select>
+          </td>
+          <td style="color:var(--text-3);font-size:12px;">${esc(u.instrument || '—')}</td>
+          <td style="text-align:center;">${u.enrollment_count || 0}</td>
+          <td style="font-size:12px;color:var(--text-3);">${fmtDate(u.created_at)}</td>
+          <td>
+            ${u.role !== 'admin' ? `<button class="btn btn-danger btn-sm" onclick="confirmDeleteUser(${u.id}, '${esc(u.name || '')}')">Delete</button>` : '—'}
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+    gsap.from(wrap.querySelectorAll('tbody tr'), { opacity: 0, x: -8, stagger: 0.03, duration: 0.3 });
+  }
+
+  function openCreateUserModal() { openModal('create-user-modal'); }
+
+  async function createUser() {
+    const btn = document.getElementById('create-user-btn');
+    const data = {
+      first_name: document.getElementById('new-first-name').value.trim(),
+      last_name: document.getElementById('new-last-name').value.trim(),
+      email: document.getElementById('new-email').value.trim(),
+      password: document.getElementById('new-password').value,
+      role: document.getElementById('new-role').value,
+      instrument: document.getElementById('new-instrument').value.trim()
+    };
+    if (!data.first_name || !data.last_name || !data.email || !data.password) {
+      return toast('Please fill in all required fields.', 'error');
+    }
+    if (data.password.length < 6) return toast('Password must be at least 6 characters.', 'error');
+    btn.disabled = true; btn.textContent = 'Creating…';
+    try {
+      await api.post('/api/admin/users', data);
+      toast('User created successfully!');
+      closeModal('create-user-modal');
+      ['new-first-name','new-last-name','new-email','new-password','new-instrument'].forEach(id => document.getElementById(id).value = '');
+      loadUsers();
+    } catch (e) {
+      toast(e.message || 'Failed to create user', 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Create User';
+    }
+  }
+
+  async function changeUserRole(userId, role) {
+    try {
+      await api.put('/api/admin/users/' + userId, { role });
+      toast('Role updated to ' + role);
+    } catch (e) {
+      toast(e.message || 'Failed to update role', 'error');
+      loadUsers();
+    }
+  }
+
+  function confirmDeleteUser(userId, name) {
+    document.getElementById('confirm-title').textContent = 'Delete User';
+    document.getElementById('confirm-body').textContent = `Are you sure you want to delete "${name}"? This action cannot be undone. All enrollments and data will be removed.`;
+    const btn = document.getElementById('confirm-action-btn');
+    btn.textContent = 'Delete User';
+    btn.onclick = async () => {
+      btn.disabled = true; btn.textContent = 'Deleting…';
+      try {
+        await api.delete('/api/admin/users/' + userId);
+        toast('User deleted.');
+        closeModal('confirm-modal');
+        loadUsers();
+      } catch (e) {
+        toast(e.message || 'Failed to delete user', 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Delete User';
+      }
+    };
+    openModal('confirm-modal');
+  }
+
+  // ═══════════ COURSES ═══════════
+  let allCourses = [];
+  async function loadCourses() {
+    try {
+      const data = await api.get('/api/admin/courses');
+      allCourses = data.courses || [];
+      renderCoursesTable(allCourses);
+    } catch (e) {
+      document.getElementById('courses-table-wrap').innerHTML = '<div class="empty-state"><p>Could not load courses.</p></div>';
+    }
+  }
+
+  function filterCourses(q) {
+    const statusFilter = document.getElementById('course-status-filter').value;
+    let filtered = allCourses.filter(c =>
+      (c.title || '').toLowerCase().includes(q.toLowerCase()) ||
+      (c.instructor_name || '').toLowerCase().includes(q.toLowerCase())
+    );
+    if (statusFilter) filtered = filtered.filter(c => c.status === statusFilter);
+    renderCoursesTable(filtered);
+  }
+
+  function renderCoursesTable(courses) {
+    const wrap = document.getElementById('courses-table-wrap');
+    document.getElementById('courses-count-label').textContent = courses.length + ' course' + (courses.length !== 1 ? 's' : '');
+    if (!courses.length) {
+      wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><p>No courses found.</p></div>';
+      return;
+    }
+    const statusBadge = (s) => {
+      const map = { active: 'badge-green', draft: 'badge-muted', archived: 'badge-red' };
+      return `<span class="badge ${map[s] || 'badge-muted'}">${esc(s)}</span>`;
+    };
+    wrap.innerHTML = `<table>
+      <thead><tr>
+        <th>Course</th><th>Instructor</th><th>Status</th><th>Category</th><th>Students</th><th>Lessons</th><th>Revenue</th><th>Pricing</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${courses.map(c => `<tr>
+          <td><strong>${esc(c.title)}</strong><br><span style="font-size:11px;color:var(--text-3);">${esc(c.level || '')} · ${c.duration_weeks || 0} weeks</span></td>
+          <td style="font-size:12px;">${esc(c.instructor_name || '—')}</td>
+          <td>
+            <select class="filter-select" style="min-width:100px;" onchange="changeCourseStatus(${c.id}, this.value)">
+              <option value="active" ${c.status==='active'?'selected':''}>Active</option>
+              <option value="draft" ${c.status==='draft'?'selected':''}>Draft</option>
+              <option value="archived" ${c.status==='archived'?'selected':''}>Archived</option>
+            </select>
+          </td>
+          <td style="font-size:12px;color:var(--text-3);">${esc(c.category || '—')}</td>
+          <td style="text-align:center;">${c.enrollment_count || 0}</td>
+          <td style="text-align:center;">${c.actual_lesson_count || 0}</td>
+          <td style="font-size:12px;">${fmtPaise(c.total_revenue)}</td>
+          <td>
+            <span class="badge ${c.is_paid ? 'badge-gold' : 'badge-muted'}">${c.is_paid ? fmtPaise(c.price_paise) : 'Free'}</span>
+          </td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="confirmDeleteCourse(${c.id}, '${esc(c.title)}')">Delete</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+    gsap.from(wrap.querySelectorAll('tbody tr'), { opacity: 0, x: -8, stagger: 0.03, duration: 0.3 });
+  }
+
+  async function changeCourseStatus(courseId, status) {
+    try {
+      await api.put('/api/admin/courses/' + courseId, { status });
+      toast('Course status changed to ' + status);
+    } catch (e) {
+      toast(e.message, 'error');
+      loadCourses();
+    }
+  }
+
+  function confirmDeleteCourse(courseId, title) {
+    document.getElementById('confirm-title').textContent = 'Delete Course';
+    document.getElementById('confirm-body').textContent = `Are you sure you want to delete "${title}"? All lessons, chapters, and enrollments will be permanently removed.`;
+    const btn = document.getElementById('confirm-action-btn');
+    btn.textContent = 'Delete Course';
+    btn.onclick = async () => {
+      btn.disabled = true; btn.textContent = 'Deleting…';
+      try {
+        await api.delete('/api/admin/courses/' + courseId);
+        toast('Course deleted.');
+        closeModal('confirm-modal');
+        loadCourses();
+      } catch (e) { toast(e.message, 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Delete Course'; }
+    };
+    openModal('confirm-modal');
+  }
+
+  // ═══════════ FINANCIAL ═══════════
+  async function loadPayments() {
+    try {
+      const data = await api.get('/api/admin/payments');
+      const s = data.summary || {};
+      document.getElementById('fin-total').textContent = fmtPaise(s.total_revenue);
+      document.getElementById('fin-month').textContent = fmtPaise(s.month_revenue);
+      document.getElementById('fin-pending').textContent = fmtPaise(s.pending_amount);
+      document.getElementById('fin-txns').textContent = s.total_transactions || 0;
+
+      gsap.from('#fin-stats .stat-card', { y: 20, opacity: 0, stagger: 0.08, duration: 0.4 });
+
+      const payments = data.payments || [];
+      const wrap = document.getElementById('payments-table-wrap');
+      if (!payments.length) {
+        wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">💰</div><p>No payment records yet.</p></div>';
+        return;
+      }
+      const statusBadge = (s) => {
+        const map = { paid: 'badge-green', created: 'badge-gold', failed: 'badge-red' };
+        return `<span class="badge ${map[s] || 'badge-muted'}">${esc(s)}</span>`;
+      };
+      wrap.innerHTML = `<table>
+        <thead><tr><th>Student</th><th>Course</th><th>Amount</th><th>Status</th><th>Order ID</th><th>Date</th></tr></thead>
+        <tbody>
+          ${payments.map(p => `<tr>
+            <td><strong>${esc(p.student_name || '—')}</strong><br><span style="font-size:11px;color:var(--text-3);">${esc(p.student_email || '')}</span></td>
+            <td>${esc(p.course_title || '—')}</td>
+            <td class="price">${fmtPaise(p.amount_paise)}</td>
+            <td>${statusBadge(p.status)}</td>
+            <td style="font-size:11px;color:var(--text-3);font-family:monospace;">${esc((p.razorpay_order_id || '').slice(0,18))}</td>
+            <td style="font-size:12px;color:var(--text-3);">${fmtDate(p.created_at)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+      gsap.from(wrap.querySelectorAll('tbody tr'), { opacity: 0, x: -8, stagger: 0.03, duration: 0.3 });
+    } catch (e) {
+      document.getElementById('payments-table-wrap').innerHTML = '<div class="empty-state"><p>Could not load payment data.</p></div>';
+    }
+  }
+
+  // ═══════════ ANNOUNCEMENTS ═══════════
+  let allAnnouncements = [];
+  async function loadAnnouncements() {
+    try {
+      const data = await api.get('/api/admin/announcements');
+      allAnnouncements = data.announcements || [];
+      renderAnnouncements(allAnnouncements);
+
+      // Populate course dropdown
+      try {
+        const cData = await api.get('/api/admin/courses');
+        const sel = document.getElementById('ann-course');
+        sel.innerHTML = '<option value="">Platform-wide</option>';
+        (cData.courses || []).forEach(c => {
+          sel.innerHTML += `<option value="${c.id}">${esc(c.title)}</option>`;
+        });
+      } catch(e) {}
+    } catch (e) {
+      document.getElementById('announcements-list').innerHTML = '<div class="empty-state"><p>Could not load announcements.</p></div>';
+    }
+  }
+
+  function renderAnnouncements(anns) {
+    const wrap = document.getElementById('announcements-list');
+    document.getElementById('ann-count-label').textContent = anns.length + ' announcement' + (anns.length !== 1 ? 's' : '');
+    if (!anns.length) {
+      wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📢</div><p>No announcements yet. Create one to get started.</p></div>';
+      return;
+    }
+    wrap.innerHTML = anns.map(a => `
+      <div class="config-card" style="padding:20px;margin-bottom:12px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              ${a.pinned ? '<span class="badge badge-gold" style="font-size:10px;">📌 Pinned</span>' : ''}
+              <span class="badge ${a.course_title ? 'badge-blue' : 'badge-muted'}" style="font-size:10px;">${a.course_title ? esc(a.course_title) : 'Platform-wide'}</span>
+            </div>
+            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">${esc(a.title)}</div>
+            <div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:8px;">${esc(a.body)}</div>
+            <div style="font-size:11px;color:var(--text-3);">By ${esc(a.author_name || 'Admin')} · ${fmtTimeAgo(a.created_at)}</div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="confirmDeleteAnnouncement(${a.id}, '${esc(a.title)}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+    gsap.from(wrap.querySelectorAll('.config-card'), { opacity: 0, y: 8, stagger: 0.04, duration: 0.3 });
+  }
+
+  function openCreateAnnouncementModal() { openModal('create-ann-modal'); }
+
+  async function createAnnouncement() {
+    const btn = document.getElementById('create-ann-btn');
+    const data = {
+      title: document.getElementById('ann-title').value.trim(),
+      body: document.getElementById('ann-body').value.trim(),
+      course_id: document.getElementById('ann-course').value || null,
+      pinned: document.getElementById('ann-pinned').checked,
+      send_email: document.getElementById('ann-email').checked
+    };
+    if (!data.title || !data.body) return toast('Title and body are required.', 'error');
+    btn.disabled = true; btn.textContent = 'Publishing…';
+    try {
+      await api.post('/api/admin/announcements', data);
+      toast('Announcement published!');
+      closeModal('create-ann-modal');
+      document.getElementById('ann-title').value = '';
+      document.getElementById('ann-body').value = '';
+      loadAnnouncements();
+    } catch (e) { toast(e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Publish Announcement'; }
+  }
+
+  function confirmDeleteAnnouncement(annId, title) {
+    document.getElementById('confirm-title').textContent = 'Delete Announcement';
+    document.getElementById('confirm-body').textContent = `Delete "${title}"? This cannot be undone.`;
+    const btn = document.getElementById('confirm-action-btn');
+    btn.textContent = 'Delete';
+    btn.onclick = async () => {
+      btn.disabled = true;
+      try {
+        await api.delete('/api/admin/announcements/' + annId);
+        toast('Announcement deleted.');
+        closeModal('confirm-modal');
+        loadAnnouncements();
+      } catch (e) { toast(e.message, 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Delete'; }
+    };
+    openModal('confirm-modal');
+  }
+
+  // ═══════════ CONFIG: Load existing ═══════════
   async function loadConfig() {
     try {
       const data = await api.get('/api/admin/config');
       const { s3 = {}, smtp = {}, general = {} } = data;
 
-      // Populate S3
       if (s3.access_key_id) document.getElementById('s3-access-key').value = s3.access_key_id;
       if (s3.secret_access_key) document.getElementById('s3-secret-key').value = s3.secret_access_key;
       if (s3.region) document.getElementById('s3-region').value = s3.region;
@@ -1332,7 +2391,6 @@
       if (s3.path_prefix) document.getElementById('s3-path-prefix').value = s3.path_prefix;
       if (s3.public_access) document.getElementById('s3-public-access').checked = s3.public_access;
 
-      // Populate SMTP
       if (smtp.host) document.getElementById('smtp-host').value = smtp.host;
       if (smtp.port) document.getElementById('smtp-port').value = smtp.port;
       if (smtp.encryption) document.getElementById('smtp-encryption').value = smtp.encryption;
@@ -1342,7 +2400,6 @@
       if (smtp.from_email) document.getElementById('smtp-from-email').value = smtp.from_email;
       if (smtp.reply_to) document.getElementById('smtp-reply-to').value = smtp.reply_to;
 
-      // Populate General
       if (general.school_name) document.getElementById('gen-school-name').value = general.school_name;
       if (general.logo_url) document.getElementById('gen-logo-url').value = general.logo_url;
       if (general.timezone) document.getElementById('gen-timezone').value = general.timezone;
@@ -1355,80 +2412,34 @@
           if (el) el.checked = types.includes(t);
         });
       }
-    } catch (e) {
-      // Config may not exist yet
-    }
+    } catch (e) {}
   }
 
-  // ── Load users ──
-  let allUsers = [];
-  async function loadUsers() {
-    const wrap = document.getElementById('users-table-wrap');
+  // ═══════════ CONFIG: Save ═══════════
+  async function saveGeneral() {
+    const btn = document.getElementById('gen-save-btn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const allowedTypes = ['pdf','mp3','mp4','wav','midi','png','jpg'].filter(t => document.getElementById('ft-' + t)?.checked);
     try {
-      const data = await api.get('/api/admin/users');
-      allUsers = data.users || [];
-      renderUsersTable(allUsers);
-    } catch (e) {
-      wrap.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-3);font-size:13px;">Could not load users.</div>`;
+      await api.put('/api/admin/config/general', {
+        school_name: document.getElementById('gen-school-name').value,
+        logo_url: document.getElementById('gen-logo-url').value,
+        timezone: document.getElementById('gen-timezone').value,
+        max_upload_mb: parseInt(document.getElementById('gen-max-upload').value) || 100,
+        allowed_file_types: allowedTypes,
+        maintenance: document.getElementById('gen-maintenance').checked
+      });
+      toast('Settings saved successfully.');
+    } catch (e) { toast(e.message, 'error'); }
+    finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Settings`;
     }
   }
 
-  function filterUsers(q) {
-    const filtered = allUsers.filter(u =>
-      (u.name || '').toLowerCase().includes(q.toLowerCase()) ||
-      (u.email || '').toLowerCase().includes(q.toLowerCase())
-    );
-    renderUsersTable(filtered);
-  }
-
-  function renderUsersTable(users) {
-    const wrap = document.getElementById('users-table-wrap');
-    const label = document.getElementById('users-count-label');
-    label.textContent = users.length + ' user' + (users.length !== 1 ? 's' : '');
-    if (!users.length) {
-      wrap.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-3);font-size:13px;">No users found.</div>`;
-      return;
-    }
-    wrap.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;">
-        <thead>
-          <tr style="border-bottom:1px solid rgba(200,168,75,0.1);">
-            <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;">Name</th>
-            <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;">Email</th>
-            <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;">Role</th>
-            <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;">Joined</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${users.map((u, i) => `
-            <tr style="background:${i % 2 === 0 ? 'transparent' : 'var(--bg-2)'};border-bottom:1px solid rgba(200,168,75,0.05);transition:background 0.15s;"
-              onmouseover="this.style.background='rgba(200,168,75,0.06)'"
-              onmouseout="this.style.background='${i % 2 === 0 ? 'transparent' : 'var(--bg-2)'}'">
-              <td style="padding:11px 12px;font-size:13px;font-weight:500;color:var(--text);">${escHtml(u.name || '—')}</td>
-              <td style="padding:11px 12px;font-size:13px;color:var(--text-2);">${escHtml(u.email || '—')}</td>
-              <td style="padding:11px 12px;">
-                <span style="background:rgba(200,168,75,0.1);color:var(--gold);font-size:11px;font-weight:600;padding:2px 9px;border-radius:12px;border:1px solid rgba(200,168,75,0.2);">
-                  ${escHtml(u.role || 'student')}
-                </span>
-              </td>
-              <td style="padding:11px 12px;font-size:12px;color:var(--text-3);">${u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>`;
-    // Animate rows in
-    gsap.from(wrap.querySelectorAll('tbody tr'), { opacity: 0, x: -8, stagger: 0.04, duration: 0.35, ease: 'power2.out' });
-  }
-
-  function escHtml(str) {
-    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ── S3 Test ──
   async function testS3() {
     const btn = document.getElementById('s3-test-btn');
-    btn.disabled = true;
-    btn.textContent = 'Testing…';
+    btn.disabled = true; btn.textContent = 'Testing…';
     try {
       const res = await api.post('/api/admin/s3/test', {
         access_key_id: document.getElementById('s3-access-key').value,
@@ -1436,22 +2447,19 @@
         region: document.getElementById('s3-region').value,
         bucket_name: document.getElementById('s3-bucket').value
       });
-      toast(res.message + (res.bucket ? ' (' + res.bucket + ')' : ''), 'success');
-    } catch (e) {
-      toast(e.message, 'error');
-    } finally {
+      toast(res.message + (res.bucket ? ' (' + res.bucket + ')' : ''));
+    } catch (e) { toast(e.message, 'error'); }
+    finally {
       btn.disabled = false;
       btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg> Test Connection`;
     }
   }
 
-  // ── Save S3 ──
   async function saveS3() {
     const btn = document.getElementById('s3-save-btn');
-    btn.disabled = true;
-    btn.textContent = 'Saving…';
+    btn.disabled = true; btn.textContent = 'Saving…';
     try {
-      const res = await api.put('/api/admin/config/s3', {
+      await api.put('/api/admin/config/s3', {
         access_key_id: document.getElementById('s3-access-key').value,
         secret_access_key: document.getElementById('s3-secret-key').value,
         region: document.getElementById('s3-region').value,
@@ -1460,28 +2468,21 @@
         path_prefix: document.getElementById('s3-path-prefix').value,
         public_access: document.getElementById('s3-public-access').checked
       });
-      toast(res.message);
-    } catch (e) {
-      toast(e.message, 'error');
-    } finally {
+      toast('S3 configuration saved.');
+    } catch (e) { toast(e.message, 'error'); }
+    finally {
       btn.disabled = false;
       btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Configuration`;
     }
   }
 
-  // ── SMTP Test Modal ──
-  function openSmtpTestModal() {
-    document.getElementById('smtp-test-modal').style.display = 'flex';
-    gsap.from('.mini-modal', { scale: 0.94, opacity: 0, duration: 0.2, ease: 'power2.out' });
-    setTimeout(() => document.getElementById('smtp-test-email').focus(), 50);
-  }
+  function openSmtpTestModal() { openModal('smtp-test-modal'); }
 
   async function sendTestEmail() {
     const btn = document.getElementById('smtp-test-send-btn');
     const testEmail = document.getElementById('smtp-test-email').value.trim();
-    if (!testEmail) { toast('Please enter a recipient email', 'error'); return; }
-    btn.disabled = true;
-    btn.textContent = 'Sending…';
+    if (!testEmail) return toast('Please enter a recipient email', 'error');
+    btn.disabled = true; btn.textContent = 'Sending…';
     try {
       const res = await api.post('/api/admin/smtp/test', {
         test_email: testEmail,
@@ -1489,23 +2490,17 @@
         port: document.getElementById('smtp-port').value,
         username: document.getElementById('smtp-username').value
       });
-      document.getElementById('smtp-test-modal').style.display = 'none';
+      closeModal('smtp-test-modal');
       toast(res.message);
-    } catch (e) {
-      toast(e.message, 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Send Test';
-    }
+    } catch (e) { toast(e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Send Test'; }
   }
 
-  // ── Save SMTP ──
   async function saveSMTP() {
     const btn = document.getElementById('smtp-save-btn');
-    btn.disabled = true;
-    btn.textContent = 'Saving…';
+    btn.disabled = true; btn.textContent = 'Saving…';
     try {
-      const res = await api.put('/api/admin/config/smtp', {
+      await api.put('/api/admin/config/smtp', {
         host: document.getElementById('smtp-host').value,
         port: parseInt(document.getElementById('smtp-port').value) || 587,
         encryption: document.getElementById('smtp-encryption').value,
@@ -1515,51 +2510,395 @@
         from_email: document.getElementById('smtp-from-email').value,
         reply_to: document.getElementById('smtp-reply-to').value
       });
-      toast(res.message);
-    } catch (e) {
-      toast(e.message, 'error');
-    } finally {
+      toast('SMTP configuration saved.');
+    } catch (e) { toast(e.message, 'error'); }
+    finally {
       btn.disabled = false;
       btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Configuration`;
     }
   }
 
-  // ── Save General ──
-  async function saveGeneral() {
-    const btn = document.getElementById('gen-save-btn');
-    btn.disabled = true;
-    btn.textContent = 'Saving…';
-    const allowedTypes = ['pdf','mp3','mp4','wav','midi','png','jpg']
-      .filter(t => document.getElementById('ft-' + t)?.checked);
+  // ═══════════ BROADCAST NOTIFICATION ═══════════
+  function openBroadcastModal() { openModal('broadcast-modal'); }
+  async function sendBroadcast() {
+    const btn = document.getElementById('bc-send-btn');
+    const data = {
+      title: document.getElementById('bc-title').value.trim(),
+      body: document.getElementById('bc-body').value.trim(),
+      target: document.getElementById('bc-target').value,
+      link: document.getElementById('bc-link').value.trim() || null
+    };
+    if (!data.title) return toast('Title is required', 'error');
+    btn.disabled = true; btn.textContent = 'Sending…';
     try {
-      const res = await api.put('/api/admin/config/general', {
-        school_name: document.getElementById('gen-school-name').value,
-        logo_url: document.getElementById('gen-logo-url').value,
-        timezone: document.getElementById('gen-timezone').value,
-        max_upload_mb: parseInt(document.getElementById('gen-max-upload').value) || 100,
-        allowed_file_types: allowedTypes,
-        maintenance: document.getElementById('gen-maintenance').checked
+      const res = await api.post('/api/admin/notifications/broadcast', data);
+      toast(res.message || 'Notification sent');
+      closeModal('broadcast-modal');
+      ['bc-title','bc-body','bc-link'].forEach(id => document.getElementById(id).value = '');
+    } catch (e) { toast(e.message || 'Failed to send', 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Send Notification'; }
+  }
+
+  // ═══════════ ROLE PERMISSIONS ═══════════
+  let permissionsCache = null;
+  async function loadPermissions() {
+    try {
+      const data = await api.get('/api/admin/permissions');
+      permissionsCache = data.permissions || {};
+    } catch (e) { permissionsCache = null; }
+  }
+  async function savePermissions() {
+    const btn = document.getElementById('save-perms-btn');
+    btn.disabled = true;
+    try {
+      const collect = (root) => Array.from(root.querySelectorAll('.perm-tag')).map(t => t.textContent.trim().toLowerCase().replace(/\s+/g,'_'));
+      const cards = document.querySelectorAll('#tab-roles .role-card');
+      const map = { 'admin':'admin','instructor':'instructor','teaching assistant':'teaching_assistant','student':'student' };
+      const permissions = {};
+      cards.forEach(card => {
+        const roleName = card.querySelector('.role-name').textContent.trim().toLowerCase();
+        const key = map[roleName] || roleName;
+        permissions[key] = collect(card);
       });
-      toast(res.message);
+      await api.put('/api/admin/permissions', { permissions });
+      toast('Permissions saved.');
+    } catch (e) { toast(e.message || 'Failed to save', 'error'); }
+    finally { btn.disabled = false; }
+  }
+
+  // ═══════════ SUBSCRIPTIONS ═══════════
+  let allPlans = [];
+  let allSubs = [];
+
+  async function loadSubscriptions() {
+    try {
+      const [plansRes, subsRes] = await Promise.all([
+        api.get('/api/admin/subscriptions/plans'),
+        api.get('/api/admin/subscriptions')
+      ]);
+      allPlans = plansRes.plans || [];
+      allSubs = subsRes.subscriptions || [];
+      renderPlans(allPlans);
+      renderSubs(allSubs);
+      const s = subsRes.summary || {};
+      document.getElementById('sub-active').textContent = s.active || 0;
+      document.getElementById('sub-mrr').textContent = fmtPaise(s.mrr_paise || 0);
+      document.getElementById('sub-cancelled').textContent = s.cancelled || 0;
+      document.getElementById('sub-expired').textContent = s.expired || 0;
+      gsap.from('#sub-stats .stat-card', { y: 16, opacity: 0, stagger: 0.06, duration: 0.4 });
     } catch (e) {
-      toast(e.message, 'error');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Settings`;
+      document.getElementById('plans-list').innerHTML = '<div class="empty-state"><p>Could not load subscriptions.</p></div>';
     }
   }
 
-  // ── Auth guard ──
+  function renderPlans(plans) {
+    const wrap = document.getElementById('plans-list');
+    if (!plans.length) {
+      wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">💳</div><p>No subscription plans yet. Click "New Plan" to create one.</p></div>';
+      return;
+    }
+    wrap.innerHTML = `<div class="grid-3">${plans.map(p => `
+      <div class="role-card" style="margin-bottom:0;">
+        <div class="role-header">
+          <div>
+            <div class="role-name">${esc(p.name)}</div>
+            <div class="role-desc">${esc(p.description || '')}</div>
+          </div>
+          <span class="badge ${p.is_active ? 'badge-green' : 'badge-muted'}">${p.is_active ? 'Active' : 'Inactive'}</span>
+        </div>
+        <div style="font-family:var(--serif);font-size:24px;color:var(--gold);font-weight:600;margin-bottom:8px;">
+          ${fmtPaise(p.price_paise)}<span style="font-size:13px;color:var(--text-3);font-family:var(--sans);"> / ${esc(p.billing_period)}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:10px;">
+          ${p.active_subscribers || 0} active · ${p.total_subscribers || 0} total
+        </div>
+        <ul style="font-size:12px;color:var(--text-2);padding-left:16px;line-height:1.6;margin-bottom:14px;min-height:60px;">
+          ${(p.features || []).map(f => `<li>${esc(f)}</li>`).join('')}
+        </ul>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-outline btn-sm" style="flex:1;" onclick='editPlan(${p.id})'>Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDeletePlan(${p.id}, '${esc(p.name)}')">Delete</button>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  function renderSubs(subs) {
+    const wrap = document.getElementById('subs-table-wrap');
+    if (!subs.length) {
+      wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>No subscribers yet.</p></div>';
+      return;
+    }
+    const statusBadge = (s) => {
+      const map = { active: 'badge-green', cancelled: 'badge-red', expired: 'badge-muted' };
+      return `<span class="badge ${map[s] || 'badge-muted'}">${esc(s)}</span>`;
+    };
+    wrap.innerHTML = `<table>
+      <thead><tr><th>User</th><th>Plan</th><th>Status</th><th>Started</th><th>Expires</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${subs.map(s => `<tr>
+          <td><strong>${esc(s.user_name || '—')}</strong><br><span style="font-size:11px;color:var(--text-3);">${esc(s.user_email || '')}</span></td>
+          <td>${esc(s.plan_name || '—')}<br><span style="font-size:11px;color:var(--text-3);">${fmtPaise(s.plan_price_paise)} / ${esc(s.plan_period || '')}</span></td>
+          <td>${statusBadge(s.status)}</td>
+          <td style="font-size:12px;color:var(--text-3);">${fmtDate(s.started_at)}</td>
+          <td style="font-size:12px;color:var(--text-3);">${s.expires_at ? fmtDate(s.expires_at) : '—'}</td>
+          <td>
+            ${s.status === 'active'
+              ? `<button class="btn btn-danger btn-sm" onclick="changeSubStatus(${s.id}, 'cancelled')">Cancel</button>`
+              : `<button class="btn btn-outline btn-sm" onclick="changeSubStatus(${s.id}, 'active')">Reactivate</button>`}
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  function openPlanModal() {
+    document.getElementById('plan-modal-title').textContent = 'New Subscription Plan';
+    ['plan-id','plan-name','plan-description','plan-price','plan-features'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('plan-period').value = 'monthly';
+    document.getElementById('plan-sort').value = 0;
+    document.getElementById('plan-active').checked = true;
+    openModal('plan-modal');
+  }
+
+  function editPlan(id) {
+    const p = allPlans.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('plan-modal-title').textContent = 'Edit Plan';
+    document.getElementById('plan-id').value = p.id;
+    document.getElementById('plan-name').value = p.name || '';
+    document.getElementById('plan-description').value = p.description || '';
+    document.getElementById('plan-price').value = (p.price_paise || 0) / 100;
+    document.getElementById('plan-period').value = p.billing_period || 'monthly';
+    document.getElementById('plan-features').value = (p.features || []).join('\n');
+    document.getElementById('plan-sort').value = p.sort_order || 0;
+    document.getElementById('plan-active').checked = !!p.is_active;
+    openModal('plan-modal');
+  }
+
+  async function savePlan() {
+    const btn = document.getElementById('plan-save-btn');
+    const id = document.getElementById('plan-id').value;
+    const data = {
+      name: document.getElementById('plan-name').value.trim(),
+      description: document.getElementById('plan-description').value.trim(),
+      price_paise: Math.round(parseFloat(document.getElementById('plan-price').value || 0) * 100),
+      billing_period: document.getElementById('plan-period').value,
+      features: document.getElementById('plan-features').value.split('\n').map(s => s.trim()).filter(Boolean),
+      sort_order: parseInt(document.getElementById('plan-sort').value) || 0,
+      is_active: document.getElementById('plan-active').checked
+    };
+    if (!data.name) return toast('Plan name required', 'error');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      if (id) await api.put('/api/admin/subscriptions/plans/' + id, data);
+      else await api.post('/api/admin/subscriptions/plans', data);
+      toast(id ? 'Plan updated' : 'Plan created');
+      closeModal('plan-modal');
+      loadSubscriptions();
+    } catch (e) { toast(e.message || 'Failed', 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Save Plan'; }
+  }
+
+  function confirmDeletePlan(id, name) {
+    document.getElementById('confirm-title').textContent = 'Delete Plan';
+    document.getElementById('confirm-body').textContent = `Delete "${name}"? Plans with active subscribers cannot be deleted.`;
+    const btn = document.getElementById('confirm-action-btn');
+    btn.textContent = 'Delete Plan';
+    btn.onclick = async () => {
+      btn.disabled = true;
+      try {
+        await api.delete('/api/admin/subscriptions/plans/' + id);
+        toast('Plan deleted.');
+        closeModal('confirm-modal');
+        loadSubscriptions();
+      } catch (e) { toast(e.message, 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Delete Plan'; }
+    };
+    openModal('confirm-modal');
+  }
+
+  async function openAssignSubModal() {
+    try {
+      if (!allUsers.length) {
+        const u = await api.get('/api/admin/users');
+        allUsers = u.users || [];
+      }
+      if (!allPlans.length) {
+        const p = await api.get('/api/admin/subscriptions/plans');
+        allPlans = p.plans || [];
+      }
+    } catch (e) {}
+    const userSel = document.getElementById('assign-user-id');
+    userSel.innerHTML = allUsers.map(u => `<option value="${u.id}">${esc(u.name || u.email)} — ${esc(u.email)}</option>`).join('');
+    const planSel = document.getElementById('assign-plan-id');
+    planSel.innerHTML = allPlans.filter(p => p.is_active).map(p => `<option value="${p.id}">${esc(p.name)} — ${fmtPaise(p.price_paise)}/${esc(p.billing_period)}</option>`).join('');
+    document.getElementById('assign-expires').value = '';
+    openModal('assign-sub-modal');
+  }
+
+  async function assignSubscription() {
+    const btn = document.getElementById('assign-sub-btn');
+    const data = {
+      user_id: parseInt(document.getElementById('assign-user-id').value),
+      plan_id: parseInt(document.getElementById('assign-plan-id').value),
+      expires_at: document.getElementById('assign-expires').value || null
+    };
+    if (!data.user_id || !data.plan_id) return toast('Select user and plan', 'error');
+    btn.disabled = true; btn.textContent = 'Assigning…';
+    try {
+      await api.post('/api/admin/subscriptions', data);
+      toast('Subscription assigned');
+      closeModal('assign-sub-modal');
+      loadSubscriptions();
+    } catch (e) { toast(e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Assign'; }
+  }
+
+  async function changeSubStatus(id, status) {
+    try {
+      await api.put('/api/admin/subscriptions/' + id, { status });
+      toast('Subscription ' + status);
+      loadSubscriptions();
+    } catch (e) { toast(e.message, 'error'); }
+  }
+
+  // ═══════════ MODERATION ═══════════
+  async function loadFlags() {
+    const status = document.getElementById('mod-status-filter').value;
+    try {
+      const url = '/api/admin/flags' + (status ? '?status=' + status : '');
+      const data = await api.get(url);
+      const flags = data.flags || [];
+      const c = data.counts || {};
+      document.getElementById('mod-pending').textContent = c.pending || 0;
+      document.getElementById('mod-resolved').textContent = c.resolved || 0;
+      document.getElementById('mod-dismissed').textContent = c.dismissed || 0;
+
+      const wrap = document.getElementById('flags-table-wrap');
+      if (!flags.length) {
+        wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🛡</div><p>No flags in this view.</p></div>';
+        return;
+      }
+      const statusBadge = (s) => {
+        const map = { pending: 'badge-gold', resolved: 'badge-green', dismissed: 'badge-muted' };
+        return `<span class="badge ${map[s] || 'badge-muted'}">${esc(s)}</span>`;
+      };
+      wrap.innerHTML = `<table>
+        <thead><tr><th>Type</th><th>Target</th><th>Reason</th><th>Reporter</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${flags.map(f => `<tr>
+            <td><span class="badge badge-blue">${esc(f.content_type)}</span></td>
+            <td><strong>${esc(f.target_title)}</strong><br><span style="font-size:11px;color:var(--text-3);">ID #${f.content_id}</span></td>
+            <td style="font-size:12px;max-width:280px;">${esc(f.reason || '—')}</td>
+            <td style="font-size:12px;">${esc(f.reporter_name || 'System')}</td>
+            <td>${statusBadge(f.status)}</td>
+            <td style="font-size:12px;color:var(--text-3);">${fmtDate(f.created_at)}</td>
+            <td>
+              ${f.status === 'pending' ? `
+                <button class="btn btn-outline btn-sm" onclick="resolveFlag(${f.id}, 'resolve')">Resolve</button>
+                <button class="btn btn-ghost btn-sm" onclick="resolveFlag(${f.id}, 'dismiss')">Dismiss</button>
+              ` : `<button class="btn btn-danger btn-sm" onclick="deleteFlag(${f.id})">Delete</button>`}
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    } catch (e) {
+      document.getElementById('flags-table-wrap').innerHTML = '<div class="empty-state"><p>Could not load flags.</p></div>';
+    }
+  }
+
+  function openFlagModal() {
+    document.getElementById('flag-content-id').value = '';
+    document.getElementById('flag-reason').value = '';
+    openModal('flag-modal');
+  }
+
+  async function createFlag() {
+    const btn = document.getElementById('flag-create-btn');
+    const data = {
+      content_type: document.getElementById('flag-type').value,
+      content_id: parseInt(document.getElementById('flag-content-id').value),
+      reason: document.getElementById('flag-reason').value.trim()
+    };
+    if (!data.content_id) return toast('Content ID required', 'error');
+    btn.disabled = true; btn.textContent = 'Creating…';
+    try {
+      await api.post('/api/admin/flags', data);
+      toast('Flag created');
+      closeModal('flag-modal');
+      loadFlags();
+    } catch (e) { toast(e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Create Flag'; }
+  }
+
+  async function resolveFlag(id, action) {
+    try {
+      await api.put('/api/admin/flags/' + id, { action });
+      toast('Flag ' + (action === 'resolve' ? 'resolved' : 'dismissed'));
+      loadFlags();
+    } catch (e) { toast(e.message, 'error'); }
+  }
+
+  async function deleteFlag(id) {
+    try {
+      await api.delete('/api/admin/flags/' + id);
+      toast('Flag deleted');
+      loadFlags();
+    } catch (e) { toast(e.message, 'error'); }
+  }
+
+  async function loadStorageBreakdown() {
+    try {
+      const data = await api.get('/api/admin/storage');
+      document.getElementById('mod-storage-total').textContent = data.total_size || '0 B';
+      document.getElementById('mod-storage-sub').textContent = `${(data.resources && data.resources.count) || 0} resource files`;
+
+      const wrap = document.getElementById('storage-breakdown');
+      const cat = data.by_category || [];
+      const typ = data.by_type || [];
+      wrap.innerHTML = `
+        <div class="grid-3" style="margin-bottom:18px;">
+          <div class="stat-card">
+            <div class="stat-number" style="font-size:24px;">${data.uploads.size}</div>
+            <div class="stat-label">Uploads</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" style="font-size:24px;">${data.resources.size}</div>
+            <div class="stat-label">Resources</div>
+            <div class="stat-sub">${data.resources.count} files</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" style="font-size:24px;">${data.certificates.size}</div>
+            <div class="stat-label">Certificates</div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:10px;">By Category</div>
+            ${cat.length ? `<table><thead><tr><th>Category</th><th>Files</th><th>Size</th></tr></thead><tbody>
+              ${cat.map(c => `<tr><td>${esc(c.category || '—')}</td><td>${c.count}</td><td>${esc(c.size)}</td></tr>`).join('')}
+            </tbody></table>` : '<p style="color:var(--text-3);font-size:13px;">No data yet.</p>'}
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:10px;">By File Type</div>
+            ${typ.length ? `<table><thead><tr><th>Type</th><th>Files</th><th>Size</th></tr></thead><tbody>
+              ${typ.map(t => `<tr><td>${esc(t.type || '—')}</td><td>${t.count}</td><td>${esc(t.size)}</td></tr>`).join('')}
+            </tbody></table>` : '<p style="color:var(--text-3);font-size:13px;">No data yet.</p>'}
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      document.getElementById('storage-breakdown').innerHTML = '<div class="empty-state"><p>Could not load storage breakdown.</p></div>';
+    }
+  }
+
+  // ═══════════ Auth ═══════════
   function handleLogout() {
     localStorage.removeItem('archive_token');
     localStorage.removeItem('archive_user');
     window.location.href = '/index.html';
   }
-
-  // Close modal on backdrop click
-  document.getElementById('smtp-test-modal').addEventListener('click', function(e) {
-    if (e.target === this) this.style.display = 'none';
-  });
 </script>
 </body>
 </html>

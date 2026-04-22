@@ -37,8 +37,16 @@ app.get('/courses/:slug', (req, res) => {
 // ── Public (no-auth) API for landing pages ──
 app.use('/api/public', require('./routes/public.routes'));
 
-// Static files
-app.use(express.static(path.join(__dirname, '../public')));
+// Static files — never cache HTML, so admin-page changes propagate immediately
+app.use(express.static(path.join(__dirname, '../public'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 app.use('/uploads', express.static(path.join(__dirname, '../data/uploads')));
 
 // Mount routes

@@ -24,14 +24,24 @@
 
   async function ensureAuth() {
     const token = localStorage.getItem('archive_token');
-    if (!token) { window.location.replace('/index.html'); return null; }
+    if (!token) {
+      console.warn('[auth-guard] no archive_token in localStorage → sign-in');
+      window.location.replace('/index.html');
+      return null;
+    }
     try {
       const data = await api.get('/api/auth/me');
+      if (!data || !data.user) {
+        console.warn('[auth-guard] /api/auth/me returned no user payload', data);
+        logout();
+        return null;
+      }
       window.currentUser = data.user;
       localStorage.setItem('archive_user', JSON.stringify(data.user));
       document.dispatchEvent(new CustomEvent('userLoaded', { detail: data.user }));
       return data.user;
-    } catch {
+    } catch (err) {
+      console.warn('[auth-guard] /api/auth/me failed → sign-in', err);
       logout();
       return null;
     }

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Payments — The Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    :root {
+      --bg:          #080706;
+      --bg-2:        #0F0D0B;
+      --bg-card:     #161412;
+      --bg-elevated: #1E1B17;
+      --bg-hover:    #252119;
+      --gold:        #C8A84B;
+      --gold-bright: #E8C96E;
+      --gold-dim:    #7A6530;
+      --gold-glow:   rgba(200,168,75,0.12);
+      --text:        #F0E6D3;
+      --text-2:      #B8A898;
+      --text-3:      #6B5E50;
+      --ruby:        #8B2E26;
+      --serif:       'Cormorant Garamond', Georgia, serif;
+      --sans:        'DM Sans', sans-serif;
+      --sidebar-w:   240px;
+      --topbar-h:    60px;
+      --radius:      6px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: var(--sans); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+    .shell { display: flex; height: 100vh; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-w); min-width: var(--sidebar-w);
+      background: var(--bg-card); display: flex; flex-direction: column;
+      height: 100vh; position: fixed; left: 0; top: 0; z-index: 100;
+      border-right: 1px solid rgba(200,168,75,0.06);
+    }
+    .sidebar-brand { padding: 22px 20px 18px; border-bottom: 1px solid rgba(200,168,75,0.06); }
+    .brand-title { font-family: var(--serif); font-style: italic; font-size: 18px; font-weight: 600; color: var(--gold); }
+    .brand-sub { font-size: 10px; color: var(--text-3); margin-top: 3px; letter-spacing: 0.04em; }
+    .sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+      border-radius: 6px; color: var(--text-3); font-size: 13px; font-weight: 500;
+      transition: background 0.15s, color 0.15s; margin-bottom: 2px; cursor: pointer;
+    }
+    .nav-item:hover { background: var(--bg-elevated); color: var(--text-2); }
+    .nav-item.active {
+      background: var(--gold-glow); color: var(--gold);
+      border-left: 3px solid var(--gold); padding-left: 9px;
+    }
+    .nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
+    .sidebar-footer { padding: 14px 10px 18px; border-top: 1px solid rgba(200,168,75,0.06); }
+    .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+    .sidebar-user:hover { background: var(--bg-elevated); }
+    .sidebar-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--gold-glow); border: 1px solid rgba(200,168,75,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: var(--gold); flex-shrink: 0;
+    }
+    .sidebar-user-info .user-name { font-size: 12px; font-weight: 600; color: var(--text-2); }
+    .sidebar-user-info .user-role { font-size: 10px; color: var(--text-3); }
+
+    /* Main */
+    .main-wrap { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; overflow: hidden; }
+    .topbar {
+      height: var(--topbar-h); background: var(--bg-2);
+      border-bottom: 1px solid rgba(200,168,75,0.06);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; position: sticky; top: 0; z-index: 50; flex-shrink: 0;
+    }
+    .topbar-title { font-family: var(--serif); font-style: italic; font-size: 20px; font-weight: 600; color: var(--gold); }
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
+    .icon-btn { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; color: var(--text-3); transition: background 0.15s, color 0.15s; cursor: pointer; text-decoration: none; }
+    .icon-btn:hover { background: var(--bg-elevated); color: var(--text-2); }
+    .topbar-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--gold-glow); border: 1px solid rgba(200,168,75,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; color: var(--gold); cursor: pointer;
+      text-decoration: none;
+    }
+    .main-content { flex: 1; overflow-y: auto; background: var(--bg); padding: 28px; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 6px; font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+    .btn-primary { background: var(--gold); color: #080706; }
+    .btn-primary:hover { background: var(--gold-bright); }
+    .btn-ghost { background: transparent; color: var(--text-3); border: 1px solid rgba(200,168,75,0.15); }
+    .btn-ghost:hover { background: var(--bg-elevated); color: var(--text-2); }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+    /* Page header */
+    .page-header { margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .page-title { font-family: var(--serif); font-style: italic; font-size: 32px; font-weight: 600; color: var(--gold); margin-bottom: 4px; }
+    .page-subtitle { font-size: 14px; color: var(--text-3); }
+
+    /* Stat cards */
+    .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+    @media (max-width: 900px) { .stat-cards { grid-template-columns: 1fr; } }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid rgba(200,168,75,0.12);
+      border-radius: 8px; padding: 22px 24px; transition: border-color 0.15s;
+    }
+    .stat-card:hover { border-color: rgba(200,168,75,0.25); }
+    .stat-card-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+    /* Large Cormorant gold amount */
+    .stat-card-value {
+      font-family: var(--serif); font-size: 36px; font-weight: 600;
+      color: var(--gold); line-height: 1;
+    }
+    .stat-card-sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+    /* Status badges */
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .status-paid { background: rgba(200,168,75,0.15); color: var(--gold); border: 1px solid rgba(200,168,75,0.25); }
+    .status-created { background: rgba(180,120,40,0.15); color: #D4963A; border: 1px solid rgba(180,120,40,0.25); }
+    .status-failed { background: rgba(60,20,18,0.40); color: #C07070; border: 1px solid rgba(139,46,38,0.25); }
+
+    /* Chart */
+    .chart-wrap {
+      background: var(--bg-card); border: 1px solid rgba(200,168,75,0.12);
+      border-radius: 8px; padding: 24px; margin-bottom: 28px;
+    }
+    .chart-title { font-family: var(--serif); font-style: italic; font-size: 17px; font-weight: 600; color: var(--gold); margin-bottom: 20px; }
+    .svg-bar { transition: height 0.3s ease; }
+
+    /* Payments table card */
+    .table-card { background: var(--bg-card); border: 1px solid rgba(200,168,75,0.12); border-radius: 8px; overflow: hidden; }
+    .table-card-header {
+      padding: 20px 24px 16px; border-bottom: 1px solid rgba(200,168,75,0.10);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .table-card-title { font-family: var(--serif); font-style: italic; font-size: 18px; font-weight: 600; color: var(--gold); }
+    .table-wrap { overflow-x: auto; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table thead { background: var(--bg-elevated); }
+    .table thead th {
+      padding: 12px 16px; font-size: 11px; font-weight: 700;
+      color: var(--text-3); text-align: left; text-transform: uppercase;
+      letter-spacing: 0.08em; border-bottom: 1px solid rgba(200,168,75,0.10);
+    }
+    .table tbody tr { background: var(--bg-card); border-bottom: 1px solid rgba(200,168,75,0.06); transition: all 0.12s; }
+    .table tbody tr:last-child { border-bottom: none; }
+    .table tbody tr:hover { background: var(--bg-2); border-left: 2px solid var(--gold); }
+    .table tbody td { padding: 14px 16px; font-size: 13px; color: var(--text-2); vertical-align: middle; }
+    /* Amount display */
+    .amount-cell { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--gold); }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
+    .toast {
+      background: var(--bg-elevated); border: 1px solid rgba(200,168,75,0.15);
+      border-left: 3px solid var(--gold); border-radius: 6px;
+      padding: 12px 16px; font-family: var(--sans); font-size: 13px; color: var(--text);
+      min-width: 240px; animation: toastIn 0.2s ease;
+    }
+    .toast.error { border-left-color: var(--ruby); }
+    @keyframes toastIn { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <div class="topbar-title">Payments</div>
+      <div class="topbar-actions">
+        <a href="/student-course-catalog.html" class="icon-btn" title="Browse courses">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </a>
+        <a href="/admin-notifications.html" class="icon-btn" title="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </a>
+        <a href="/admin-profile.html" class="topbar-avatar" id="topbar-avatar" title="Profile">—</a>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" id="page-title">Payments</h1>
+          <p class="page-subtitle" id="page-subtitle">Your payment history and receipts.</p>
+        </div>
+        <a href="/student-course-catalog.html" class="btn btn-primary" style="text-decoration:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          Browse Courses
+        </a>
+      </div>
+
+      <!-- Instructor Summary Cards -->
+      <div class="stat-cards" id="instructor-stats" style="display:none;">
+        <div class="stat-card">
+          <div class="stat-card-label">Total Revenue</div>
+          <div class="stat-card-value" id="stat-total">₹0</div>
+          <div class="stat-card-sub">All time · paid transactions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">This Month</div>
+          <div class="stat-card-value" id="stat-month">₹0</div>
+          <div class="stat-card-sub" id="stat-month-label">Current month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Pending</div>
+          <div class="stat-card-value" id="stat-pending">₹0</div>
+          <div class="stat-card-sub">Orders awaiting payment</div>
+        </div>
+      </div>
+
+      <!-- Revenue Chart (Instructor) -->
+      <div class="chart-wrap" id="revenue-chart-wrap" style="display:none;">
+        <div class="chart-title">Monthly Revenue</div>
+        <svg id="revenue-chart" width="100%" height="160" viewBox="0 0 700 160" preserveAspectRatio="none"></svg>
+      </div>
+
+      <!-- Payments Table -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="table-card-title" id="table-title">My Payments</div>
+        </div>
+        <div class="table-wrap">
+          <table class="table" id="payments-table">
+            <thead>
+              <tr>
+                <th>Course</th>
+                <th id="student-col" style="display:none;">Student</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Receipt</th>
+              </tr>
+            </thead>
+            <tbody id="payments-tbody">
+              <tr><td colspan="6" style="text-align:center; color:var(--text-3); padding:40px;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="/assets/js/api.js?v=2"></script>
+<script src="/assets/js/auth-guard.js?v=2"></script>
+<script>requireRole(['admin']);</script>
+<script src="/assets/js/admin-sidebar.js?v=2"></script>
+<script>
+  let currentUser = null;
+
+  function toast(msg, type = 'success') {
+    const tc = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast${type === 'error' ? ' error' : ''}`;
+    t.textContent = msg;
+    tc.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('archive_token');
+    localStorage.removeItem('archive_user');
+    window.location.href = '/index.html';
+  }
+
+  function formatDate(str) {
+    if (!str) return '—';
+    return new Date(str).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function formatAmount(paise) {
+    return '₹' + ((paise || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+  }
+
+  function statusBadge(s) {
+    const cls = s === 'paid' ? 'status-paid' : s === 'created' ? 'status-created' : 'status-failed';
+    const label = s === 'paid' ? 'Paid' : s === 'created' ? 'Pending' : 'Failed';
+    return `<span class="status-badge ${cls}">${label}</span>`;
+  }
+
+  document.addEventListener('userLoaded', (e) => {
+    currentUser = e.detail;
+    const initials = currentUser.avatar_initials || (currentUser.first_name[0] + currentUser.last_name[0]);
+    const sbAvatar = document.getElementById('sb-avatar');
+    if (sbAvatar) sbAvatar.textContent = initials;
+    const sbName = document.getElementById('sb-name');
+    if (sbName) sbName.textContent = currentUser.first_name + ' ' + currentUser.last_name;
+    const topbarAvatar = document.getElementById('topbar-avatar');
+    if (topbarAvatar) topbarAvatar.textContent = initials;
+
+    const pageTitle = document.getElementById('page-title');
+    if (pageTitle) pageTitle.textContent = 'Revenue & Payments';
+    const pageSubtitle = document.getElementById('page-subtitle');
+    if (pageSubtitle) pageSubtitle.textContent = 'Overview of all transactions and student payments.';
+    const tableTitle = document.getElementById('table-title');
+    if (tableTitle) tableTitle.textContent = 'All Transactions';
+    const instructorStats = document.getElementById('instructor-stats');
+    if (instructorStats) instructorStats.style.display = 'grid';
+    const revenueChartWrap = document.getElementById('revenue-chart-wrap');
+    if (revenueChartWrap) revenueChartWrap.style.display = 'block';
+    const studentCol = document.getElementById('student-col');
+    if (studentCol) studentCol.style.display = '';
+    loadAdminPayments();
+  });
+
+  async function loadStudentPayments() {
+    try {
+      const data = await api.get('/api/payments/history');
+      renderPaymentsTable(data.payments, false);
+    } catch (e) {
+      toast(e.message, 'error');
+    }
+  }
+
+  async function loadAdminPayments() {
+    try {
+      const data = await api.get('/api/payments/admin');
+      renderPaymentsTable(data.payments, true);
+      renderStats(data.summary);
+      renderChart(data.payments);
+    } catch (e) {
+      toast(e.message, 'error');
+    }
+  }
+
+  function renderPaymentsTable(payments, isAdmin) {
+    const tbody = document.getElementById('payments-tbody');
+    if (!payments || payments.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 6 : 5}" style="text-align:center;color:var(--text-3);padding:48px;font-style:italic;">No payments yet.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = payments.map(p => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:${p.cover_color || '#C8A84B'};flex-shrink:0;"></div>
+            <span style="font-weight:500;color:var(--text);">${p.course_title || '—'}</span>
+          </div>
+        </td>
+        ${isAdmin ? `<td style="color:var(--text-2);">${p.student_name || '—'}<br><span style="font-size:11px;color:var(--text-3);">${p.student_email || ''}</span></td>` : ''}
+        <td class="amount-cell">${formatAmount(p.amount_paise)}</td>
+        <td style="color:var(--text-3);">${formatDate(p.created_at)}</td>
+        <td>${statusBadge(p.status)}</td>
+        <td>
+          ${p.status === 'paid' ? `<button class="btn-ghost btn btn-sm" onclick="downloadReceipt(${p.id})">Receipt</button>` : '<span style="color:var(--text-3);">—</span>'}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function renderStats(summary) {
+    if (!summary) return;
+    document.getElementById('stat-total').textContent = formatAmount(summary.total_paise || 0);
+    document.getElementById('stat-month').textContent = formatAmount(summary.this_month_paise || 0);
+    document.getElementById('stat-pending').textContent = formatAmount(summary.pending_paise || 0);
+  }
+
+  function renderChart(payments) {
+    const paid = payments.filter(p => p.status === 'paid');
+    const monthlyMap = {};
+    paid.forEach(p => {
+      const d = new Date(p.created_at);
+      const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      monthlyMap[key] = (monthlyMap[key] || 0) + (p.amount_paise || 0);
+    });
+
+    const keys = Object.keys(monthlyMap).sort().slice(-6);
+    if (keys.length === 0) return;
+
+    const values = keys.map(k => monthlyMap[k]);
+    const maxVal = Math.max(...values, 1);
+    const svg = document.getElementById('revenue-chart');
+    const w = 700, h = 140, barW = 60, gap = (w - keys.length * barW) / (keys.length + 1);
+
+    svg.innerHTML = keys.map((k, i) => {
+      const barH = Math.round((values[i] / maxVal) * 100);
+      const x = gap + i * (barW + gap);
+      const y = h - barH - 24;
+      const label = k.slice(5);
+      const amtLabel = '₹' + Math.round(values[i] / 100).toLocaleString('en-IN');
+      return `
+        <rect class="svg-bar" x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="rgba(200,168,75,0.55)" stroke="rgba(200,168,75,0.30)" stroke-width="1"/>
+        <text x="${x + barW / 2}" y="${h - 8}" text-anchor="middle" font-size="10" fill="#6B5E50" font-family="DM Sans,sans-serif">${label}</text>
+        <text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle" font-size="9" fill="#C8A84B" font-family="DM Sans,sans-serif">${amtLabel}</text>
+      `;
+    }).join('');
+  }
+
+  function downloadReceipt(paymentId) {
+    toast('Receipt download not yet implemented — payment ID: ' + paymentId, 'success');
+  }
+
+  // Razorpay checkout (can be triggered from course catalog via URL param)
+  const urlParams = new URLSearchParams(window.location.search);
+  const checkoutCourseId = urlParams.get('pay_course');
+  if (checkoutCourseId) {
+    document.addEventListener('userLoaded', () => initCheckout(checkoutCourseId));
+  }
+
+  async function initCheckout(courseId) {
+    try {
+      const priceData = await api.get(`/api/payments/course/${courseId}/price`);
+      if (!priceData.is_paid || priceData.price_paise === 0) {
+        toast('This course is free — enrolling directly…', 'success');
+        return;
+      }
+
+      const orderData = await api.post('/api/payments/create-order', { course_id: parseInt(courseId) });
+
+      const options = {
+        key: orderData.key_id,
+        amount: orderData.amount,
+        currency: orderData.currency || 'INR',
+        name: 'The Archive Music School',
+        description: orderData.course_title || 'Course Enrollment',
+        order_id: orderData.order_id,
+        handler: async function(response) {
+          try {
+            const verifyRes = await api.post('/api/payments/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              course_id: parseInt(courseId)
+            });
+            if (verifyRes.success) {
+              toast('Payment successful! Redirecting to course…', 'success');
+              setTimeout(() => window.location.href = `/student-course-detail.html?id=${courseId}`, 1500);
+            }
+          } catch (e) {
+            toast('Payment verification failed: ' + e.message, 'error');
+          }
+        },
+        prefill: {
+          name: currentUser ? (currentUser.first_name + ' ' + currentUser.last_name) : '',
+          email: currentUser ? currentUser.email : ''
+        },
+        theme: { color: '#C8A84B' }
+      };
+
+      if (typeof Razorpay !== 'undefined') {
+        const rzp = new Razorpay(options);
+        rzp.open();
+      } else {
+        toast('Razorpay is not available. Please configure payment keys in Admin Panel.', 'error');
+      }
+    } catch (e) {
+      toast('Could not initiate payment: ' + e.message, 'error');
+    }
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.from('.page-header, .stat-card, .card, .content-section', {
+    y: 24, opacity: 0, duration: 0.65, stagger: 0.07, ease: 'power3.out', delay: 0.1
+  });
+  gsap.utils.toArray('.card, tr, .list-item').forEach(el => {
+    gsap.from(el, { scrollTrigger: { trigger: el, start: 'top 90%' },
+      y: 14, opacity: 0, duration: 0.45, ease: 'power2.out' });
+  });
+</script>
+</body>
+</html>
