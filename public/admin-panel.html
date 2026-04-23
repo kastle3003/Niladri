@@ -2130,7 +2130,11 @@
             <span class="badge ${c.is_paid ? 'badge-gold' : 'badge-muted'}">${c.is_paid ? fmtPaise(c.price_paise) : 'Free'}</span>
           </td>
           <td>
-            <button class="btn btn-danger btn-sm" onclick="confirmDeleteCourse(${c.id}, '${esc(c.title)}')">Delete</button>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn btn-outline btn-sm" onclick="window.open('/courses/${esc(c.slug || c.id)}', '_blank')" title="Preview public page">👁</button>
+              <button class="btn btn-outline btn-sm" onclick="window.open('/course-manager.html#${c.id}', '_blank')" title="Manage chapters & lessons">📂</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmDeleteCourse(${c.id}, '${esc(c.title)}')">Delete</button>
+            </div>
           </td>
         </tr>`).join('')}
       </tbody>

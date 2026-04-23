@@ -1120,11 +1120,8 @@ function defaultCoverForLevel(level) {
 
 db.defaultCoverForLevel = defaultCoverForLevel;
 
-// Ensure the 5 homepage courses exist (idempotent — skips slugs that already exist).
-try {
-  require('./seed-homepage').ensureHomepageCourses(db);
-} catch (e) {
-  console.warn('[seed-homepage] failed:', e.message);
-}
+// Homepage course auto-seed disabled — operator manages courses via admin CMS.
+// (Previously called require('./seed-homepage').ensureHomepageCourses(db); on every
+// startup, which re-created deleted courses.)
 
 module.exports = db;

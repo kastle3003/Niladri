@@ -858,7 +858,7 @@
                 <th>Level</th>
                 <th>Status</th>
                 <th>Lessons</th>
-                <th style="width:150px">Actions</th>
+                <th style="width:180px">Actions</th>
               </tr>
             </thead>
             <tbody id="coursesTbody">
@@ -1531,6 +1531,7 @@ async function loadCourses() {
         <td class="td-muted">${c.lesson_count||c.lessons||0}</td>
         <td>
           <div class="actions">
+            <button class="btn-icon" title="Preview public page" onclick="window.open('/courses/${esc(c.slug || c.id)}', '_blank')">👁</button>
             <button class="btn-icon" title="Manage Chapters & Lessons" onclick="window.open('/course-manager.html#${c.id}', '_blank')">📂</button>
             <button class="btn-icon" title="Edit metadata" onclick="editCourse(${JSON.stringify(c).replace(/"/g,'&quot;')})">✏️</button>
             <button class="btn-icon success" title="Toggle Status" onclick="toggleCourseStatus('${c.id}','${c.status}')">⟳</button>
