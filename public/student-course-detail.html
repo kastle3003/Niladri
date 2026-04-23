@@ -594,6 +594,117 @@
       flex-shrink: 0;
     }
 
+    /* ── Inline lesson materials viewer ── */
+    .lesson-viewer {
+      display: none;
+      padding: 16px 20px 24px;
+      background: var(--bg);
+      border-bottom: 1px solid rgba(200,168,75,0.04);
+    }
+    .lesson-viewer.open { display: block; }
+    .viewer-empty {
+      font-size: 13px; color: var(--text-3);
+      padding: 14px 16px; border: 1px dashed rgba(200,168,75,0.1);
+      border-radius: 6px; text-align: center;
+    }
+    .mat-block {
+      margin-bottom: 20px;
+      background: var(--bg-card);
+      border: 1px solid rgba(200,168,75,0.08);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .mat-block-head {
+      padding: 10px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(200,168,75,0.06);
+      background: linear-gradient(to right, rgba(200,168,75,0.04), transparent);
+    }
+    .mat-block-title {
+      font-family: var(--sans);
+      font-size: 13px; font-weight: 600;
+      color: var(--text);
+    }
+    .mat-type-tag {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 3px;
+    }
+    .mat-type-tag.type-video { background: rgba(200,168,75,0.15); color: var(--gold); }
+    .mat-type-tag.type-pdf   { background: rgba(183,106,95,0.15); color: #e07070; }
+    .mat-type-tag.type-image { background: rgba(106,143,110,0.15); color: #6fcf6f; }
+    .mat-type-tag.type-url   { background: rgba(94,125,179,0.15); color: #9090d0; }
+
+    .mat-video-frame {
+      position: relative;
+      aspect-ratio: 16/9;
+      background: #000;
+    }
+    .mat-video-frame iframe,
+    .mat-video-frame video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: none;
+    }
+
+    .mat-ts-bar {
+      padding: 10px 14px;
+      background: var(--bg-2);
+      border-top: 1px solid rgba(200,168,75,0.04);
+    }
+    .mat-ts-head {
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-3); margin-bottom: 8px;
+    }
+    .mat-ts-chips {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .mat-ts-chip {
+      font-family: var(--sans);
+      font-size: 11px;
+      color: var(--text-2);
+      background: var(--bg-card);
+      border: 1px solid rgba(200,168,75,0.12);
+      padding: 4px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .mat-ts-chip:hover { color: var(--gold); border-color: var(--gold); }
+    .mat-ts-chip .ts-time {
+      font-family: monospace;
+      color: var(--gold-dim);
+      font-size: 10px;
+    }
+    .mat-ts-chip:hover .ts-time { color: var(--gold); }
+
+    .mat-img {
+      display: block;
+      width: 100%;
+      max-height: 520px;
+      object-fit: contain;
+      background: #000;
+    }
+    .mat-pdf {
+      width: 100%;
+      height: 640px;
+      border: none;
+    }
+    .mat-url-cta {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px;
+      gap: 16px;
+    }
+    .mat-url-cta a {
+      background: var(--gold);
+      color: var(--bg);
+      padding: 8px 18px;
+      border-radius: 4px;
+      font-weight: 600; font-size: 13px;
+      transition: background 0.15s;
+    }
+    .mat-url-cta a:hover { background: var(--gold-bright); }
+
     /* ── Right Sidebar Card ── */
     .info-card {
       background: var(--bg-card);
@@ -1073,6 +1184,17 @@
 <div class="toast-container" id="toast-container"></div>
 
 <script src="/assets/js/api.js"></script>
+<script>
+  // Deferred-auth: unauthenticated visitors are sent to the public course
+  // landing (/courses/:slug) so they can still browse before signing in.
+  // We try to preserve the course id in the URL by reading ?id= first.
+  (function redirectIfAnonymous() {
+    if (localStorage.getItem('archive_token')) return;
+    const id = new URLSearchParams(location.search).get('id');
+    if (id) window.location.replace('/courses/' + id);
+    else    window.location.replace('/courses.html');
+  })();
+</script>
 <script src="/assets/js/auth-guard.js"></script>
 <script>requireRole(['student']);</script>
 <script src="/assets/js/student-sidebar.js"></script>
@@ -1319,18 +1441,145 @@
 
       const rightEl = locked
         ? `<div class="lesson-lock"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>`
-        : `<div class="lesson-check ${completed ? 'done' : ''}" id="check-${l.id}" onclick="completeLesson(${l.id})">
+        : `<div class="lesson-check ${completed ? 'done' : ''}" id="check-${l.id}" onclick="event.stopPropagation(); completeLesson(${l.id})">
             ${completed ? '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
           </div>`;
 
+      const clickAttr = locked ? '' : `onclick="toggleLessonViewer(${l.id})" style="cursor:pointer;"`;
       return `
-        <div class="${rowClass}">
+        <div class="${rowClass}" ${clickAttr}>
           <div class="${typeClass}">${typeIcon}</div>
           <div class="lesson-title">${l.title}</div>
           <div class="lesson-duration">${duration}</div>
           ${rightEl}
-        </div>`;
+        </div>
+        <div class="lesson-viewer" id="viewer-${l.id}"></div>`;
     }).join('');
+  }
+
+  /* ── Lesson materials viewer ── */
+  const _lessonCache = {};
+
+  async function toggleLessonViewer(lessonId) {
+    const viewer = document.getElementById('viewer-' + lessonId);
+    if (!viewer) return;
+    const willOpen = !viewer.classList.contains('open');
+    if (willOpen) {
+      viewer.classList.add('open');
+      if (!_lessonCache[lessonId]) {
+        viewer.innerHTML = `<div class="viewer-empty">Loading lesson…</div>`;
+        try {
+          const data = await api.get('/api/lessons/' + lessonId);
+          _lessonCache[lessonId] = data.lesson;
+        } catch (err) {
+          viewer.innerHTML = `<div class="viewer-empty">Could not load materials.</div>`;
+          return;
+        }
+      }
+      renderLessonViewer(lessonId);
+    } else {
+      // Stop any playing media when collapsing
+      viewer.querySelectorAll('iframe, video').forEach(el => {
+        const src = el.src;
+        el.src = '';
+        el.src = src;
+      });
+      viewer.classList.remove('open');
+    }
+  }
+
+  function renderLessonViewer(lessonId) {
+    const viewer = document.getElementById('viewer-' + lessonId);
+    if (!viewer) return;
+    const lesson = _lessonCache[lessonId];
+    const materials = (lesson && lesson.materials) || [];
+    if (!materials.length) {
+      viewer.innerHTML = `<div class="viewer-empty">No materials have been added to this lesson yet.</div>`;
+      return;
+    }
+    viewer.innerHTML = materials.map(m => renderMaterialBlock(m)).join('');
+  }
+
+  function renderMaterialBlock(m) {
+    const title = m.title || `(untitled ${m.type})`;
+    const head = `
+      <div class="mat-block-head">
+        <div class="mat-block-title">${escapeHtml(title)}</div>
+        <span class="mat-type-tag type-${m.type}">${m.type}</span>
+      </div>`;
+    let body = '';
+    if (m.type === 'video' && m.url) {
+      const isYT = /youtube\.com|youtu\.be/i.test(m.url);
+      const embed = isYT ? toYouTubeEmbed(m.url) : m.url;
+      const player = isYT
+        ? `<iframe id="vid-${m.id}" src="${embed}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+        : `<video id="vid-${m.id}" src="${m.url}" controls preload="metadata"></video>`;
+      body = `<div class="mat-video-frame">${player}</div>`;
+      const ts = m.timestamps || [];
+      if (ts.length) {
+        body += `
+          <div class="mat-ts-bar">
+            <div class="mat-ts-head">Chapters · ${ts.length}</div>
+            <div class="mat-ts-chips">
+              ${ts.map(t => `<button class="mat-ts-chip" onclick="seekVideo(${m.id}, ${t.time_seconds}, ${isYT ? 1 : 0})"><span class="ts-time">${fmtViewerTime(t.time_seconds)}</span><span>${escapeHtml(t.label || '')}</span></button>`).join('')}
+            </div>
+          </div>`;
+      }
+    } else if (m.type === 'image' && m.url) {
+      body = `<img class="mat-img" src="${m.url}" alt="${escapeHtml(title)}">`;
+    } else if (m.type === 'pdf' && m.url) {
+      body = `<iframe class="mat-pdf" src="${m.url}" title="${escapeHtml(title)}"></iframe>`;
+    } else if (m.type === 'url' && m.url) {
+      body = `
+        <div class="mat-url-cta">
+          <div style="font-size:12px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(m.url)}</div>
+          <a href="${m.url}" target="_blank" rel="noopener">Open link →</a>
+        </div>`;
+    } else {
+      body = `<div style="padding:16px;font-size:12px;color:var(--text-3);">No content URL set.</div>`;
+    }
+    return `<div class="mat-block">${head}${body}</div>`;
+  }
+
+  function fmtViewerTime(s) {
+    s = Math.max(0, parseInt(s) || 0);
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`;
+  }
+
+  function toYouTubeEmbed(url) {
+    // Accept watch URLs, short URLs, or already-embed URLs
+    const ytId = (() => {
+      const m1 = url.match(/youtu\.be\/([\w-]+)/);
+      if (m1) return m1[1];
+      const m2 = url.match(/[?&]v=([\w-]+)/);
+      if (m2) return m2[1];
+      const m3 = url.match(/youtube\.com\/embed\/([\w-]+)/);
+      if (m3) return m3[1];
+      return null;
+    })();
+    if (!ytId) return url;
+    return `https://www.youtube.com/embed/${ytId}?enablejsapi=1`;
+  }
+
+  function seekVideo(materialId, seconds, isYouTube) {
+    const iframe = document.getElementById('vid-' + materialId);
+    if (!iframe) return;
+    if (isYouTube) {
+      const src = new URL(iframe.src);
+      src.searchParams.set('start', seconds);
+      src.searchParams.set('autoplay', '1');
+      iframe.src = src.toString();
+    } else {
+      iframe.currentTime = seconds;
+      iframe.play && iframe.play();
+    }
+  }
+
+  function escapeHtml(s) {
+    return (s || '').toString()
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   /* ── Toggle chapter ── */

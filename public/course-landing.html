@@ -248,6 +248,64 @@
     .lesson-lock { width: 14px; height: 14px; color: var(--gold-dim); }
     .lesson-lock svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; }
     .lesson-dur { font-size: 11px; color: var(--cream-dim); min-width: 36px; text-align: right; }
+    .preview-tag {
+      font-size: 10px; color: var(--gold); letter-spacing: .1em; text-transform: uppercase;
+      border: 1px solid var(--gold); padding: 2px 6px; border-radius: 3px;
+    }
+    .preview-btn {
+      font-size: 10px; font-weight: 600; color: var(--ink, #0F0D0B); background: var(--gold);
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 3px;
+      transition: background .15s;
+    }
+    .lesson-previewable:hover .preview-btn { background: var(--gold-bright, #E8C96E); }
+
+    /* ─── PREVIEW MODAL ─── */
+    .preview-modal-backdrop {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(8,7,6,0.92);
+      display: none; align-items: center; justify-content: center;
+      padding: 32px;
+    }
+    .preview-modal-backdrop.open { display: flex; }
+    .preview-modal {
+      width: min(1000px, 100%); max-height: 92vh;
+      background: #111; border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .preview-modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; background: #1a1815; border-bottom: 1px solid var(--border);
+    }
+    .preview-modal-title {
+      font-family: var(--font-display); font-size: 18px; font-weight: 600;
+      color: var(--cream);
+    }
+    .preview-modal-close {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: none; border: 1px solid var(--border); color: var(--cream-dim);
+      font-size: 16px; cursor: pointer; transition: all .15s;
+    }
+    .preview-modal-close:hover { color: var(--cream); border-color: var(--gold); }
+    .preview-modal-body {
+      position: relative; background: #000;
+      aspect-ratio: 16/9;
+    }
+    .preview-modal-body iframe, .preview-modal-body video {
+      position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+    }
+    .preview-modal-foot {
+      padding: 16px 20px; font-size: 12px; color: var(--cream-dim);
+      display: flex; justify-content: space-between; gap: 16px; align-items: center;
+      border-top: 1px solid var(--border);
+    }
+    .preview-modal-foot a {
+      background: var(--gold); color: #0F0D0B;
+      padding: 8px 16px; border-radius: 3px; font-weight: 600;
+      text-decoration: none; font-size: 12px; letter-spacing: .05em;
+    }
+    .preview-modal-foot a:hover { background: var(--gold-bright, #E8C96E); }
 
     /* ─── INSTRUCTOR ─── */
     .instructor-card-pub {
@@ -548,7 +606,9 @@ async function renderPage(data) {
   const html = `
     <!-- HERO -->
     <div id="hero">
-      <div class="hero-bg" style="background:${course.cover_color || '#1a0d00'}"></div>
+      <div class="hero-bg" style="background:${course.cover_color || '#1a0d00'}">
+        ${course.cover_image_url ? `<img src="${course.cover_image_url}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">` : ''}
+      </div>
       <div class="hero-left">
         <p class="hero-eyebrow">${course.category} · ${course.level || 'All Levels'}</p>
         <h1 class="hero-title">${course.title}</h1>
@@ -601,10 +661,11 @@ async function renderPage(data) {
           <p class="section-label">About This Course</p>
           <h2 class="section-heading">What you will <em>experience</em></h2>
           <div class="section-body">
-            ${course.description.split('. ').reduce((acc, s, i) => {
-              if (i === 0 || i % 3 !== 0) return acc + (acc ? '. ' : '') + s;
-              return acc + '.</p><p>' + s;
-            }, '<p>') + '.</p>'}
+            ${(course.description || `An immersive ${course.instrument || course.category || ''} course taught by ${course.instructor_name || 'our expert faculty'}.`)
+              .split('. ').reduce((acc, s, i) => {
+                if (i === 0 || i % 3 !== 0) return acc + (acc ? '. ' : '') + s;
+                return acc + '.</p><p>' + s;
+              }, '<p>') + '.</p>'}
           </div>
         </div>
 
@@ -644,13 +705,23 @@ async function renderPage(data) {
                   <span class="chapter-toggle"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
                 </div>
                 <div class="chapter-lessons">
-                  ${ch.lessons.map((l, li) => `
-                    <div class="lesson-row">
+                  ${ch.lessons.map((l, li) => {
+                    const videoMat = (l.materials || []).find(m => m.type === 'video' && m.url);
+                    const canPreview = l.is_preview && videoMat;
+                    return `
+                    <div class="lesson-row${canPreview ? ' lesson-previewable' : ''}"
+                         ${canPreview ? `onclick="openPreview(${l.id})"` : ''}
+                         ${canPreview ? 'style="cursor:pointer;"' : ''}>
                       <div class="lesson-type-icon">${lessonIcon(l.type)}</div>
                       <span class="lesson-name">${l.title}</span>
-                      ${li === 0 && idx === 0 ? '<span style="font-size:10px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase">Preview</span>' : '<span class="lesson-lock"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>'}
+                      ${l.is_preview
+                        ? (canPreview
+                            ? '<span class="preview-btn">▶ Watch Free Preview</span>'
+                            : '<span class="preview-tag">Free Preview</span>')
+                        : '<span class="lesson-lock"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>'}
                       ${l.duration_minutes ? `<span class="lesson-dur">${fmtDur(l.duration_minutes)}</span>` : ''}
-                    </div>`).join('')}
+                    </div>`;
+                  }).join('')}
                 </div>
               </div>`).join('')}
           </div>
@@ -661,7 +732,7 @@ async function renderPage(data) {
         <!-- INSTRUCTOR -->
         <div class="section reveal">
           <p class="section-label">Your Instructor</p>
-          <h2 class="section-heading">Meet <em>${course.instructor_name.split(' ')[0]}</em></h2>
+          <h2 class="section-heading">Meet <em>${(course.instructor_name || 'your instructor').split(' ')[0]}</em></h2>
           <div class="instructor-card-pub">
             <div class="instructor-avatar-big" style="background: ${course.cover_color || '#1a0d00'}">
               ${course.instructor_initials || '??'}
@@ -702,7 +773,7 @@ async function renderPage(data) {
     <div class="bottom-cta reveal">
       <div class="bottom-cta-text">
         <h2>Ready to begin your <em>journey</em>?</h2>
-        <p>Join ${course.instructor_name.split(' ')[0]}'s course and transform your relationship with ${course.instrument || 'music'} — for good.</p>
+        <p>Join ${(course.instructor_name || 'our instructor').split(' ')[0]}'s course and transform your relationship with ${course.instrument || 'music'} — for good.</p>
       </div>
       <div class="bottom-cta-action">
         <button class="btn-enroll-bottom enroll-trigger" onclick="${enrollBtnAction}">${enrollBtnLabel}</button>
@@ -798,6 +869,69 @@ function toggleChapter(id) {
     showError('Course not found or unavailable.');
   }
 })();
+
+// ─── PREVIEW PLAYER ──────────────────────────────────────────────────────────
+// The public /api/public/courses/:slug response embeds materials for preview
+// lessons only. We find the clicked lesson, locate its first video material,
+// and render it in an embedded modal. Works for YouTube (iframe) and raw MP4
+// (<video> tag). Closing the modal stops the player by clearing the src.
+let _landingData = null;
+const _origRender = renderPage;
+renderPage = async function patched(data) {
+  _landingData = data;
+  return _origRender.call(this, data);
+};
+
+function openPreview(lessonId) {
+  if (!_landingData) return;
+  let lesson = null;
+  for (const ch of (_landingData.chapters || [])) {
+    const hit = (ch.lessons || []).find(l => l.id === lessonId);
+    if (hit) { lesson = hit; break; }
+  }
+  if (!lesson) return;
+  const vid = (lesson.materials || []).find(m => m.type === 'video' && m.url);
+  if (!vid) { alert('Preview video not available.'); return; }
+
+  const isYT = /youtube\.com|youtu\.be/i.test(vid.url);
+  const embed = isYT ? toEmbed(vid.url) : vid.url;
+  const player = isYT
+    ? `<iframe src="${embed}?autoplay=1" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
+    : `<video src="${vid.url}" controls autoplay></video>`;
+
+  document.getElementById('preview-modal-title').textContent = lesson.title;
+  document.getElementById('preview-modal-body').innerHTML = player;
+  document.getElementById('preview-modal-backdrop').classList.add('open');
+}
+
+function closePreview() {
+  document.getElementById('preview-modal-body').innerHTML = '';
+  document.getElementById('preview-modal-backdrop').classList.remove('open');
+}
+
+function toEmbed(url) {
+  const id = (url.match(/youtu\.be\/([\w-]+)/) || [])[1]
+          || (url.match(/[?&]v=([\w-]+)/) || [])[1]
+          || (url.match(/youtube\.com\/embed\/([\w-]+)/) || [])[1];
+  return id ? `https://www.youtube.com/embed/${id}` : url;
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview(); });
 </script>
+
+<!-- Preview player modal -->
+<div class="preview-modal-backdrop" id="preview-modal-backdrop" onclick="if(event.target.id==='preview-modal-backdrop')closePreview()">
+  <div class="preview-modal">
+    <div class="preview-modal-head">
+      <div class="preview-modal-title" id="preview-modal-title">Preview</div>
+      <button class="preview-modal-close" onclick="closePreview()" aria-label="Close">✕</button>
+    </div>
+    <div class="preview-modal-body" id="preview-modal-body"></div>
+    <div class="preview-modal-foot">
+      <span>Enjoying this? Enrol to unlock the full course.</span>
+      <a href="#" onclick="closePreview(); const b=document.querySelector('.enroll-trigger'); if(b) b.click();">Enrol Now</a>
+    </div>
+  </div>
+</div>
 </body>
 </html>

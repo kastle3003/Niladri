@@ -1,17 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
 const db = require('../db');
+const { persistUpload } = require('../lib/storage');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, process.env.UPLOAD_DIR || './data/uploads'),
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, 'attach-' + unique + path.extname(file.originalname));
-  }
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+
+// GET /api/messages — alias for /threads so the bare URL returns JSON instead of falling to the SPA.
+router.get('/', (req, res) => {
+  req.url = '/threads';
+  router.handle(req, res);
 });
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
 // GET /api/messages/unread-count
 router.get('/unread-count', (req, res) => {
@@ -141,7 +140,7 @@ router.post('/threads', (req, res) => {
 });
 
 // POST /api/messages/threads/:id/reply
-router.post('/threads/:id/reply', upload.single('attachment'), (req, res) => {
+router.post('/threads/:id/reply', upload.single('attachment'), async (req, res) => {
   try {
     const participation = db.prepare(
       'SELECT * FROM thread_participants WHERE thread_id = ? AND user_id = ?'
@@ -150,7 +149,9 @@ router.post('/threads/:id/reply', upload.single('attachment'), (req, res) => {
 
     const { body } = req.body;
     if (!body) return res.status(400).json({ error: 'body is required' });
-    const attachment_path = req.file ? `/uploads/${req.file.filename}` : (req.body.attachment_path || null);
+    const attachment_path = req.file
+      ? await persistUpload(req.file, 'messages')
+      : (req.body.attachment_path || null);
 
     const result = db.prepare(
       'INSERT INTO messages (thread_id, sender_id, body, attachment_path, read_by) VALUES (?, ?, ?, ?, ?)'

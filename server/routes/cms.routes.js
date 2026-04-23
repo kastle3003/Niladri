@@ -77,12 +77,16 @@ router.post('/courses', (req, res) => {
       slug = `${baseSlug}-${n++}`;
     }
 
+    // Default the instructor to the creating admin if none provided, so the
+    // course isn't orphaned in the public catalog with "(no instructor)".
+    const ownerId = instructor_id || req.user.id;
+
     const result = db.prepare(`
       INSERT INTO courses (title, slug, subtitle, description, instructor_id, instrument, level, category, tags, cover_color, duration_weeks, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       title, slug, subtitle || null, description || null,
-      instructor_id || null, instrument || null,
+      ownerId, instrument || null,
       level || null, category || null,
       tags ? JSON.stringify(Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim())) : '[]',
       cover_color || null, duration_weeks || null, status || 'active'

@@ -1,20 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
 const db = require('../db');
 const requireRole = require('../middleware/role');
+const { persistUpload } = require('../lib/storage');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, process.env.UPLOAD_DIR || './data/uploads');
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, 'sheet-' + unique + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 // GET /api/sheet-music
 router.get('/', (req, res) => {
@@ -57,13 +48,13 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /api/sheet-music — instructor only
-router.post('/', requireRole('instructor'), upload.fields([{ name: 'file', maxCount: 1 }, { name: 'preview', maxCount: 1 }]), (req, res) => {
+router.post('/', requireRole('instructor'), upload.fields([{ name: 'file', maxCount: 1 }, { name: 'preview', maxCount: 1 }]), async (req, res) => {
   try {
     const { title, composer, period, instrument, difficulty, page_count, course_id } = req.body;
     if (!title) return res.status(400).json({ error: 'Title is required' });
 
-    const file_path = req.files?.file?.[0]?.filename ? `/uploads/${req.files.file[0].filename}` : null;
-    const preview_path = req.files?.preview?.[0]?.filename ? `/uploads/${req.files.preview[0].filename}` : null;
+    const file_path = await persistUpload(req.files?.file?.[0], 'sheetmusic');
+    const preview_path = await persistUpload(req.files?.preview?.[0], 'sheetmusic/preview');
 
     const result = db.prepare(`
       INSERT INTO sheet_music (title, composer, period, instrument, difficulty, file_path, preview_path, page_count, uploaded_by, course_id)

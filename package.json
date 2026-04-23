@@ -8,6 +8,8 @@
     "dev": "node server/index.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.622.0",
+    "@aws-sdk/s3-request-presigner": "^3.622.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^12.9.0",
     "cors": "^2.8.5",

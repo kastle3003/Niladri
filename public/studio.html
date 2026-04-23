@@ -57,47 +57,7 @@
 </head>
 <body>
 <div class="shell">
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-title">The Archive</div>
-      <div class="brand-sub">Music School</div>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="/student-dashboard.html" class="nav-item" id="nav-dash">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-        Dashboard
-      </a>
-      <a href="/student-course-catalog.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        Library
-      </a>
-      <a href="/student-lessons.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-        My Lessons
-      </a>
-      <a href="/student-sheet-music.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        Sheet Music
-      </a>
-      <a href="/studio.html" class="nav-item active">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        Studio
-      </a>
-      <a href="/student-archive.html" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-        Archive
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user" onclick="handleLogout()">
-        <div class="sidebar-avatar" id="sb-avatar">?</div>
-        <div class="sidebar-user-info">
-          <div class="user-name" id="sb-name">Loading…</div>
-          <div class="user-role">Student</div>
-        </div>
-      </div>
-    </div>
-  </aside>
+  <aside class="sidebar" id="sidebar"></aside>
 
   <div class="main-wrap">
     <header class="topbar">
@@ -149,7 +109,7 @@
             <div class="card-label">Save Recording</div>
             <div class="form-group">
               <label class="form-label">Title</label>
-              <input class="form-input" id="rec-title" placeholder="e.g. Bach Suite No.1 - Prelude run-through">
+              <input class="form-input" id="rec-title" placeholder="e.g. Raag Yaman — Alap run-through">
             </div>
             <div class="form-group">
               <label class="form-label">Notes</label>
@@ -199,6 +159,7 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/auth-guard.js"></script>
+<script src="/assets/js/student-sidebar.js"></script>
 <script>
   gsap.registerPlugin(ScrollTrigger);
 
@@ -465,10 +426,8 @@
 
   document.addEventListener('userLoaded', (e) => {
     const user = e.detail;
-    document.getElementById('sb-avatar').textContent = user.avatar_initials || '?';
-    document.getElementById('sb-name').textContent = user.first_name + ' ' + user.last_name;
-    document.getElementById('topbar-avatar').textContent = user.avatar_initials || '?';
-    document.getElementById('nav-dash').href = user.role === 'instructor' ? '/instructor-dashboard.html' : '/student-dashboard.html';
+    const topAvatar = document.getElementById('topbar-avatar');
+    if (topAvatar) topAvatar.textContent = user.avatar_initials || '?';
     loadRecordings();
   });
 </script>

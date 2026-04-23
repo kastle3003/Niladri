@@ -3,30 +3,10 @@ const router = express.Router();
 const db = require('../db');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
+const { persistUpload, presignedUrl, deleteObject, wasabiEnabled } = require('../lib/storage');
 
-let multer;
-try {
-  multer = require('multer');
-} catch (e) {
-  console.warn('multer not installed, file uploads will be disabled');
-}
-
-const UPLOAD_DIR = path.join(__dirname, '../../data/resources');
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
-let upload;
-if (multer) {
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname);
-      cb(null, `res_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
-    }
-  });
-  upload = multer({ storage, limits: { fileSize: 200 * 1024 * 1024 } });
-} else {
-  upload = { single: () => (req, res, next) => next() };
-}
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200 * 1024 * 1024 } });
 
 // GET /api/resources?course_id=:id&lesson_id=:id&category=:cat
 router.get('/', (req, res) => {
@@ -64,7 +44,7 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/resources/:id/download
-router.get('/:id/download', (req, res) => {
+router.get('/:id/download', async (req, res) => {
   try {
     const resource = db.prepare('SELECT * FROM resources WHERE id = ?').get(req.params.id);
     if (!resource) return res.status(404).json({ error: 'Resource not found' });
@@ -77,23 +57,36 @@ router.get('/:id/download', (req, res) => {
 
     if (!hasAccess) return res.status(403).json({ error: 'Access denied' });
 
-    if (!fs.existsSync(resource.file_path)) {
+    db.prepare('UPDATE resources SET download_count = download_count + 1 WHERE id = ?').run(req.params.id);
+
+    const stored = resource.file_path || '';
+
+    // Wasabi-stored: redirect to presigned URL
+    if (stored.startsWith('/api/files/')) {
+      const key = stored.replace(/^\/api\/files\//, '');
+      const url = await presignedUrl(key, 900);
+      return res.redirect(302, url);
+    }
+
+    // Local fallback — handle both "/uploads/<file>" (new local) and absolute disk paths (legacy rows)
+    const abs = stored.startsWith('/uploads/')
+      ? path.join(__dirname, '../../data/uploads', stored.replace('/uploads/', ''))
+      : stored;
+
+    if (!abs || !fs.existsSync(abs)) {
       return res.status(404).json({ error: 'File not found on disk' });
     }
 
-    // Increment download count
-    db.prepare('UPDATE resources SET download_count = download_count + 1 WHERE id = ?').run(req.params.id);
-
-    const filename = path.basename(resource.file_path);
+    const filename = path.basename(abs);
     res.setHeader('Content-Disposition', `attachment; filename="${resource.title || filename}"`);
-    res.sendFile(resource.file_path);
+    res.sendFile(abs);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // POST /api/resources  (instructor upload)
-router.post('/', upload.single('file'), (req, res) => {
+router.post('/', upload.single('file'), async (req, res) => {
   try {
     if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
@@ -106,7 +99,7 @@ router.post('/', upload.single('file'), (req, res) => {
 
     const fileType = path.extname(req.file.originalname).replace('.', '').toLowerCase();
     const fileSizeBytes = req.file.size;
-    const filePath = req.file.path;
+    const filePath = await persistUpload(req.file, 'resources');
 
     const result = db.prepare(`
       INSERT INTO resources (uploaded_by, title, description, course_id, lesson_id, file_path, file_type, file_size_bytes, category, is_public)
@@ -154,7 +147,7 @@ router.put('/:id', (req, res) => {
 });
 
 // DELETE /api/resources/:id
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const resource = db.prepare('SELECT * FROM resources WHERE id = ?').get(req.params.id);
     if (!resource) return res.status(404).json({ error: 'Resource not found' });
@@ -162,9 +155,14 @@ router.delete('/:id', (req, res) => {
       return res.status(403).json({ error: 'Not your resource' });
     }
 
-    // Delete file from disk
-    if (resource.file_path && fs.existsSync(resource.file_path)) {
-      try { fs.unlinkSync(resource.file_path); } catch (e) { /* ignore */ }
+    const stored = resource.file_path || '';
+    if (stored.startsWith('/api/files/')) {
+      if (wasabiEnabled()) await deleteObject(stored);
+    } else if (stored.startsWith('/uploads/')) {
+      const abs = path.join(__dirname, '../../data/uploads', stored.replace('/uploads/', ''));
+      if (fs.existsSync(abs)) { try { fs.unlinkSync(abs); } catch (e) { /* ignore */ } }
+    } else if (stored && fs.existsSync(stored)) {
+      try { fs.unlinkSync(stored); } catch (e) { /* ignore */ }
     }
 
     db.prepare('DELETE FROM resources WHERE id = ?').run(req.params.id);

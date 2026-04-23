@@ -1,18 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
+const { persistUpload } = require('../lib/storage');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, process.env.UPLOAD_DIR || './data/uploads'),
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, 'avatar-' + unique + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 function ensureProfile(userId) {
   const existing = db.prepare('SELECT * FROM user_profile WHERE user_id = ?').get(userId);
@@ -90,11 +83,11 @@ router.put('/', (req, res) => {
 });
 
 // POST /api/profile/avatar
-router.post('/avatar', upload.single('avatar'), (req, res) => {
+router.post('/avatar', upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     ensureProfile(req.user.id);
-    const avatarUrl = `/uploads/${req.file.filename}`;
+    const avatarUrl = await persistUpload(req.file, 'avatars');
     db.prepare("UPDATE user_profile SET avatar_url = ?, updated_at = datetime('now') WHERE user_id = ?").run(avatarUrl, req.user.id);
     res.json({ avatar_url: avatarUrl });
   } catch (err) {

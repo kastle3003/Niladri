@@ -1,20 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
 const db = require('../db');
 const requireRole = require('../middleware/role');
+const { persistUpload } = require('../lib/storage');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, process.env.UPLOAD_DIR || './data/uploads');
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, 'sub-' + unique + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
 
 // GET /api/submissions/me
 router.get('/me', (req, res) => {
@@ -56,10 +47,10 @@ router.get('/instructor', requireRole('instructor'), (req, res) => {
 });
 
 // POST /api/submissions
-router.post('/', upload.single('file'), (req, res) => {
+router.post('/', upload.single('file'), async (req, res) => {
   try {
     const { lesson_id, course_id, recording_id, notes } = req.body;
-    const file_path = req.file ? `/uploads/${req.file.filename}` : null;
+    const file_path = await persistUpload(req.file, 'submissions');
 
     const result = db.prepare(`
       INSERT INTO submissions (student_id, lesson_id, course_id, recording_id, file_path, notes, status)

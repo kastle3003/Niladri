@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Payments — The Archive</title>
+  <title>Admin Payments — The Foundation Room</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -422,7 +422,7 @@
         key: orderData.key_id,
         amount: orderData.amount,
         currency: orderData.currency || 'INR',
-        name: 'The Archive Music School',
+        name: 'The Foundation Room',
         description: orderData.course_title || 'Course Enrollment',
         order_id: orderData.order_id,
         handler: async function(response) {

@@ -432,10 +432,129 @@ const migrations = [
   `ALTER TABLE courses ADD COLUMN is_paid INTEGER DEFAULT 0`,
   `ALTER TABLE courses ADD COLUMN slug TEXT`,
   `ALTER TABLE courses ADD COLUMN tags TEXT DEFAULT '[]'`,
+  `ALTER TABLE courses ADD COLUMN cover_image_url TEXT`,
+  `ALTER TABLE courses ADD COLUMN bundle_price_paise INTEGER DEFAULT 0`,
+
+  // Chapters = "Foundations"
+  `ALTER TABLE chapters ADD COLUMN price_individual_paise INTEGER DEFAULT 0`,
+  `ALTER TABLE chapters ADD COLUMN preview_enabled INTEGER DEFAULT 1`,
+
+  // Lessons = "Lectures"
+  `ALTER TABLE lessons ADD COLUMN is_preview INTEGER DEFAULT 0`,
+  `ALTER TABLE lessons ADD COLUMN duration_seconds INTEGER DEFAULT 0`,
+
+  // Progress tracking (anti-skip fields)
+  `ALTER TABLE lesson_progress ADD COLUMN watched_seconds INTEGER DEFAULT 0`,
+  `ALTER TABLE lesson_progress ADD COLUMN last_position INTEGER DEFAULT 0`,
+  `ALTER TABLE lesson_progress ADD COLUMN completion_percentage INTEGER DEFAULT 0`,
+  `ALTER TABLE lesson_progress ADD COLUMN updated_at TEXT`,
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch(e) { /* column already exists */ }
 }
+
+// Admin moderation + subscriptions tables (referenced by admin.routes.js)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS content_flags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content_type TEXT NOT NULL,
+    content_id   INTEGER NOT NULL,
+    reason       TEXT,
+    reported_by  INTEGER REFERENCES users(id),
+    status       TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','resolved','dismissed')),
+    resolution   TEXT,
+    resolved_by  INTEGER REFERENCES users(id),
+    resolved_at  TEXT,
+    created_at   TEXT DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_flags_status ON content_flags(status);
+
+  CREATE TABLE IF NOT EXISTS subscription_plans (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    name           TEXT NOT NULL,
+    description    TEXT DEFAULT '',
+    price_paise    INTEGER NOT NULL DEFAULT 0,
+    billing_period TEXT NOT NULL DEFAULT 'monthly' CHECK (billing_period IN ('monthly','yearly','lifetime')),
+    features       TEXT DEFAULT '[]',
+    sort_order     INTEGER DEFAULT 0,
+    is_active      INTEGER DEFAULT 1,
+    created_at     TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS user_subscriptions (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id       INTEGER NOT NULL REFERENCES users(id),
+    plan_id       INTEGER NOT NULL REFERENCES subscription_plans(id),
+    status        TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','cancelled','expired')),
+    expires_at    TEXT,
+    cancelled_at  TEXT,
+    created_at    TEXT DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_subs_user ON user_subscriptions(user_id);
+  CREATE INDEX IF NOT EXISTS idx_subs_plan ON user_subscriptions(plan_id);
+`);
+
+// New table: purchases — course bundle OR individual foundation (chapter)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS purchases (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    course_id INTEGER REFERENCES courses(id),
+    foundation_id INTEGER REFERENCES chapters(id),
+    type TEXT NOT NULL CHECK (type IN ('bundle','individual')),
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','completed','failed','refunded')),
+    amount_paise INTEGER NOT NULL DEFAULT 0,
+    currency TEXT NOT NULL DEFAULT 'INR',
+    razorpay_order_id TEXT,
+    razorpay_payment_id TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_purchases_user ON purchases(user_id);
+  CREATE INDEX IF NOT EXISTS idx_purchases_course ON purchases(course_id);
+  CREATE INDEX IF NOT EXISTS idx_purchases_foundation ON purchases(foundation_id);
+  CREATE INDEX IF NOT EXISTS idx_purchases_status ON purchases(status);
+`);
+
+// Flag the first lesson of each chapter as a preview by default, one-shot backfill
+try {
+  db.exec(`
+    UPDATE lessons SET is_preview = 1
+    WHERE id IN (
+      SELECT MIN(id) FROM lessons GROUP BY chapter_id
+    ) AND (is_preview = 0 OR is_preview IS NULL);
+  `);
+} catch (e) { /* ok */ }
+
+// Backfill lesson.duration_seconds from duration_minutes when missing
+try {
+  db.exec(`UPDATE lessons SET duration_seconds = duration_minutes * 60 WHERE (duration_seconds IS NULL OR duration_seconds = 0) AND duration_minutes > 0`);
+} catch (e) { /* ok */ }
+
+// ── Lesson materials + video timestamps (additive, safe on re-run) ──
+db.exec(`
+  CREATE TABLE IF NOT EXISTS lesson_materials (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lesson_id INTEGER NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+    type TEXT NOT NULL,
+    title TEXT,
+    url TEXT,
+    file_path TEXT,
+    duration_seconds INTEGER,
+    order_index INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_lesson_materials_lesson ON lesson_materials(lesson_id);
+
+  CREATE TABLE IF NOT EXISTS video_timestamps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    material_id INTEGER NOT NULL REFERENCES lesson_materials(id) ON DELETE CASCADE,
+    time_seconds INTEGER NOT NULL,
+    label TEXT,
+    order_index INTEGER DEFAULT 0
+  );
+  CREATE INDEX IF NOT EXISTS idx_video_timestamps_material ON video_timestamps(material_id);
+`);
 
 // ── Role integrity: 3 allowed roles (student, instructor, admin) ──
 // SQLite can't add CHECK to existing column via ALTER, so we use triggers.
@@ -552,7 +671,7 @@ if (userCount.count === 0) {
     'sitar-the-complete-foundation',
     'From first notes to raga mastery',
     'An immersive journey into the world of the sitar under Niladri Kumar\'s direct mentorship. Beginning with instrument anatomy, correct posture, and meend (glide) technique, students progress through foundational ragas in the Imdadkhani gharana tradition. Live sessions include real-time corrections, dedicated riyaz modules, and performance recordings reviewed by Niladri himself.',
-    niladri.lastInsertRowid, 'Sitar', 'Foundation', 'Sitar',
+    niladri.lastInsertRowid, 'Sitar', 'Beginner', 'Sitar',
     '["Hindustani Classical","Raga","Imdadkhani Gharana","Beginner Friendly"]',
     '#1A0D00', '#C8A84B', 16, 32, 'active'
   );
@@ -562,7 +681,7 @@ if (userCount.count === 0) {
     'djembe-world-percussions',
     'Rhythm as a universal language',
     'Taufiq Qureshi opens the world of rhythm in this extraordinary course blending Djembe, tabla bols, and world percussion traditions. Students learn polyrhythmic patterns, groove construction, and the meditative quality of deep listening. Suitable for complete beginners and practising musicians alike who want to awaken their inner rhythm.',
-    taufiq.lastInsertRowid, 'Djembe', 'Foundation', 'Percussion',
+    taufiq.lastInsertRowid, 'Djembe', 'Beginner', 'Percussion',
     '["World Music","Rhythm","Tabla","Polyrhythm","Beginner Friendly"]',
     '#001A08', '#C8A84B', 12, 24, 'active'
   );
@@ -582,7 +701,7 @@ if (userCount.count === 0) {
     'kathak-lucknow-gharana',
     'Grace, rhythm and storytelling in motion',
     'Guruma Sangeeta Sinha guides students through the graceful Lucknow style of Kathak — from foundational tatkar (footwork) and hastas (hand gestures) to full compositions and thumri abhinaya. Each module is structured around a thematic rasa, bringing together the technical and expressive dimensions of the dance.',
-    sangeeta.lastInsertRowid, 'Kathak', 'Foundation', 'Dance',
+    sangeeta.lastInsertRowid, 'Kathak', 'Beginner', 'Dance',
     '["Classical Dance","Tatkar","Abhinaya","Lucknow Gharana","Thumri"]',
     '#001A1A', '#C8A84B', 24, 48, 'active'
   );
@@ -602,7 +721,7 @@ if (userCount.count === 0) {
     'writers-room-makarand-deshpande',
     'Find your voice. Tell your truth.',
     'Makarand Deshpande\'s Writer\'s Room is unlike any writing course you\'ve experienced. Part masterclass, part therapy, part performance — these live sessions push actors, writers and storytellers to excavate their deepest material and transform it into compelling work. Absolutely no prior writing experience required.',
-    makarand.lastInsertRowid, 'Writing', 'Foundation', 'Acting',
+    makarand.lastInsertRowid, 'Writing', 'Beginner', 'Acting',
     '["Scriptwriting","Theatre","Storytelling","Performance","Acting"]',
     '#0A0A1A', '#C8A84B', 10, 20, 'active'
   );
@@ -702,7 +821,7 @@ if (userCount.count === 0) {
   const quoteInsert = db.prepare(`INSERT INTO quotes (text, attribution) VALUES (?, ?)`);
   quoteInsert.run('Music is the medicine of the mind.', 'John A. Logan');
   quoteInsert.run('Nada Brahma — Sound is God. The universe is vibration.', 'Ancient Vedic Teaching');
-  quoteInsert.run('Without music, life would be a mistake.', 'Friedrich Nietzsche');
+  quoteInsert.run('Music is not a profession. It is a sadhana — a daily devotion.', 'Pandit Bhimsen Joshi');
   quoteInsert.run('The sitar speaks what words cannot. It reaches where language ends.', 'Pandit Ravi Shankar');
   quoteInsert.run('Rhythm is the soul of life. The whole universe revolves in rhythm. Everything and every human action revolves in rhythm.', 'Babatunde Olatunji');
   quoteInsert.run('Music gives a soul to the universe, wings to the mind, flight to the imagination, and life to everything.', 'Plato');
@@ -732,6 +851,275 @@ if (userCount.count === 0) {
     'Instructor account for development and testing.',
     1
   );
+}
+
+// ── Startup content migrations (idempotent) ──
+// Fix historical seed typo "Introuction to sitar" → "Introduction to sitar" on any existing row.
+{
+  try {
+    db.prepare("UPDATE courses SET title = REPLACE(title, 'Introuction', 'Introduction') WHERE title LIKE '%Introuction%'").run();
+    db.prepare("UPDATE courses SET subtitle = REPLACE(subtitle, 'Introuction', 'Introduction') WHERE subtitle LIKE '%Introuction%'").run();
+    db.prepare("UPDATE courses SET description = REPLACE(description, 'Introuction', 'Introduction') WHERE description LIKE '%Introuction%'").run();
+  } catch (_) { /* columns optional; ignore */ }
+}
+// Retire the Western-philosopher quote in favour of an Indian-classical one.
+{
+  try {
+    db.prepare(`UPDATE quotes
+      SET text = 'Music is not a profession. It is a sadhana — a daily devotion.',
+          attribution = 'Pandit Bhimsen Joshi'
+      WHERE attribution = 'Friedrich Nietzsche'`).run();
+  } catch (_) { /* table may not exist on very old DBs */ }
+}
+// Normalize course/sheet level terminology: 'Foundation' (course-level) → 'Beginner'.
+// Note: 'Foundation' remains valid as the CHAPTER term (A/B/C/D/E Foundations inside a course).
+{
+  try {
+    db.prepare("UPDATE courses SET level = 'Beginner' WHERE level = 'Foundation'").run();
+    db.prepare("UPDATE sheet_music SET level = 'Beginner' WHERE level = 'Foundation'").run();
+  } catch (_) { /* optional tables */ }
+}
+
+// ── Level → default cover image (stable Unsplash URLs, no auth) ──
+const LEVEL_COVER_IMAGES = {
+  Foundation:   'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=1200&q=75&auto=format&fit=crop',
+  Beginner:     'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1200&q=75&auto=format&fit=crop',
+  Intermediate: 'https://images.unsplash.com/photo-1558098329-a11cff621064?w=1200&q=75&auto=format&fit=crop',
+  Advanced:     'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=1200&q=75&auto=format&fit=crop',
+  Masterclass:  'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&q=75&auto=format&fit=crop',
+};
+function defaultCoverForLevel(level) {
+  return LEVEL_COVER_IMAGES[level] || LEVEL_COVER_IMAGES.Foundation;
+}
+
+// ── Demo courses: idempotent — seeds only when `courses` table is empty ──
+{
+  const courseCount = db.prepare('SELECT COUNT(*) AS c FROM courses').get().c;
+  if (courseCount === 0) {
+    // Resolve instructor ids by email; fall back to any instructor if missing
+    const pickInstructor = (email) => {
+      const u = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+      if (u) return u.id;
+      const anyInstr = db.prepare("SELECT id FROM users WHERE role = 'instructor' ORDER BY id LIMIT 1").get();
+      return anyInstr ? anyInstr.id : null;
+    };
+
+    const insertCourse = db.prepare(`
+      INSERT INTO courses
+        (title, slug, subtitle, description, instructor_id, instrument, level, category, tags,
+         cover_color, cover_accent, cover_image_url, duration_weeks, lesson_count, status, is_paid, price_paise)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const insertChapter   = db.prepare(`INSERT INTO chapters (course_id, title, order_index, description) VALUES (?, ?, ?, ?)`);
+    const insertLesson    = db.prepare(`INSERT INTO lessons (chapter_id, course_id, title, order_index, type, content_url, duration_minutes) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+    const insertMaterial  = db.prepare(`INSERT INTO lesson_materials (lesson_id, type, title, url, duration_seconds, order_index) VALUES (?, ?, ?, ?, ?, ?)`);
+    const insertTimestamp = db.prepare(`INSERT INTO video_timestamps (material_id, time_seconds, label, order_index) VALUES (?, ?, ?, ?)`);
+    const bumpLessonCount = db.prepare(`UPDATE courses SET lesson_count = ? WHERE id = ?`);
+
+    // Auto-generate 1-minute timestamps up to duration
+    function autoTimestamps(materialId, durationSeconds) {
+      if (!durationSeconds || durationSeconds < 60) return;
+      let idx = 0;
+      for (let t = 60; t < durationSeconds; t += 60) {
+        insertTimestamp.run(materialId, t, `Minute ${t / 60}`, idx++);
+      }
+    }
+
+    const demos = [
+      {
+        title: 'Sitar — The Complete Foundation',
+        slug: 'sitar-the-complete-foundation',
+        subtitle: 'From first notes to raga mastery',
+        description: 'An immersive journey into the world of the sitar under Niladri Kumar\'s direct mentorship. Begin with instrument anatomy, posture, and meend, progress through Raga Yaman in the Imdadkhani gharana tradition.',
+        instructor: 'niladri@thefoundationroom.in',
+        instrument: 'Sitar', level: 'Foundation', category: 'Sitar',
+        tags: ['Hindustani Classical', 'Raga', 'Imdadkhani Gharana', 'Beginner Friendly'],
+        cover_color: '#1A0D00', cover_accent: '#C8A84B',
+        duration_weeks: 16,
+        chapters: [
+          {
+            title: 'Welcome to the Sitar',
+            lessons: [
+              { title: 'Welcome from Niladri Kumar', type: 'video', duration_minutes: 10, materials: [
+                { type: 'video', title: 'Welcome message', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', duration_seconds: 600, auto_ts: true },
+                { type: 'pdf',   title: 'Course orientation PDF', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+                { type: 'image', title: 'The sitar — anatomy diagram', url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=1200&q=75&auto=format&fit=crop' },
+              ]},
+              { title: 'Setting Up Your Riyaz Space', type: 'video', duration_minutes: 12, materials: [
+                { type: 'video', title: 'Studio walkthrough', url: 'https://www.youtube.com/embed/5qap5aO4i9A', duration_seconds: 720, auto_ts: true },
+                { type: 'url',   title: 'Recommended equipment list', url: 'https://en.wikipedia.org/wiki/Sitar' },
+              ]},
+            ],
+          },
+          {
+            title: 'Posture & Right Hand (Mizrab)',
+            lessons: [
+              { title: 'Baithak — The Classical Sitting Posture', type: 'video', duration_minutes: 18, materials: [
+                { type: 'video', title: 'Posture demonstration', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', duration_seconds: 1080, auto_ts: true },
+                { type: 'pdf',   title: 'Posture checklist', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+              ]},
+              { title: 'Da-Ra Strokes on Open String', type: 'exercise', duration_minutes: 25, materials: [
+                { type: 'video', title: 'Stroke technique close-up', url: 'https://www.youtube.com/embed/jfKfPfyJRdk', duration_seconds: 1500, auto_ts: true },
+              ]},
+            ],
+          },
+        ],
+      },
+      {
+        title: 'Djembe & World Percussions',
+        slug: 'djembe-world-percussions',
+        subtitle: 'Rhythm as a universal language',
+        description: 'Taufiq Qureshi opens the world of rhythm — blending Djembe, tabla bols, and world percussion. Polyrhythms, groove construction and deep listening, for beginners and practising musicians.',
+        instructor: 'taufiq@thefoundationroom.in',
+        instrument: 'Djembe', level: 'Beginner', category: 'Percussion',
+        tags: ['World Music', 'Rhythm', 'Tabla', 'Polyrhythm', 'Beginner Friendly'],
+        cover_color: '#001A08', cover_accent: '#C8A84B',
+        duration_weeks: 12,
+        chapters: [
+          {
+            title: 'The World of Rhythm',
+            lessons: [
+              { title: 'Welcome: Why Rhythm Heals', type: 'video', duration_minutes: 12, materials: [
+                { type: 'video', title: 'Taufiq\'s welcome', url: 'https://www.youtube.com/embed/jfKfPfyJRdk', duration_seconds: 720, auto_ts: true },
+                { type: 'image', title: 'Djembe hand positions', url: 'https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=1200&q=75&auto=format&fit=crop' },
+              ]},
+              { title: 'Active Listening — Rhythms of the World', type: 'reading', duration_minutes: 20, materials: [
+                { type: 'pdf', title: 'Listening list with timestamps', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+                { type: 'url', title: 'Playlist link', url: 'https://en.wikipedia.org/wiki/Djembe' },
+              ]},
+            ],
+          },
+          {
+            title: 'Djembe Fundamentals',
+            lessons: [
+              { title: 'The Three Core Sounds: Bass, Tone, Slap', type: 'video', duration_minutes: 30, materials: [
+                { type: 'video', title: 'Technique demo', url: 'https://www.youtube.com/embed/5qap5aO4i9A', duration_seconds: 1800, auto_ts: true },
+              ]},
+            ],
+          },
+        ],
+      },
+      {
+        title: 'Hindustani Vocals — Kirana Gharana',
+        slug: 'hindustani-vocals-kirana-gharana',
+        subtitle: 'The science and art of the classical voice',
+        description: 'Train with Sveta Kilpady in the Kirana gharana tradition. Sur, layakari, raga grammar, khayal and thumri. Includes personalised feedback on recorded practice.',
+        instructor: 'sveta@thefoundationroom.in',
+        instrument: 'Vocals', level: 'Intermediate', category: 'Vocals',
+        tags: ['Khayal', 'Thumri', 'Raga', 'Sur', 'Kirana Gharana'],
+        cover_color: '#1A0014', cover_accent: '#C8A84B',
+        duration_weeks: 20,
+        chapters: [
+          {
+            title: 'Foundations of the Voice',
+            lessons: [
+              { title: 'Sur Sadhana — Daily Voice Practice', type: 'video', duration_minutes: 25, materials: [
+                { type: 'video', title: 'Warm-up routine', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', duration_seconds: 1500, auto_ts: true },
+                { type: 'pdf',   title: 'Warm-up sheet', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+              ]},
+              { title: 'Understanding Raga Grammar', type: 'reading', duration_minutes: 30, materials: [
+                { type: 'pdf',   title: 'Raga cheat-sheet', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+                { type: 'image', title: 'Thaat diagram', url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&q=75&auto=format&fit=crop' },
+              ]},
+            ],
+          },
+        ],
+      },
+      {
+        title: 'Kathak — Lucknow Gharana',
+        slug: 'kathak-lucknow-gharana',
+        subtitle: 'Grace, rhythm and storytelling in motion',
+        description: 'Guruma Sangeeta Sinha guides students through Lucknow-gharana Kathak — tatkar, hastas, abhinaya and thumri compositions across the nava rasa.',
+        instructor: 'sangeeta@thefoundationroom.in',
+        instrument: 'Kathak', level: 'Foundation', category: 'Dance',
+        tags: ['Classical Dance', 'Tatkar', 'Abhinaya', 'Lucknow Gharana'],
+        cover_color: '#001A1A', cover_accent: '#C8A84B',
+        duration_weeks: 24,
+        chapters: [
+          {
+            title: 'Foundations of Kathak',
+            lessons: [
+              { title: 'Tatkar — The Footwork Alphabet', type: 'video', duration_minutes: 22, materials: [
+                { type: 'video', title: 'Tatkar demonstration', url: 'https://www.youtube.com/embed/jfKfPfyJRdk', duration_seconds: 1320, auto_ts: true },
+                { type: 'image', title: 'Foot position chart', url: 'https://images.unsplash.com/photo-1519160558534-579f5106e43f?w=1200&q=75&auto=format&fit=crop' },
+              ]},
+              { title: 'Hastas — Hand Gestures', type: 'reading', duration_minutes: 18, materials: [
+                { type: 'pdf', title: 'Mudra guide', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+              ]},
+            ],
+          },
+        ],
+      },
+      {
+        title: 'Writer\'s Room with Makarand Deshpande',
+        slug: 'writers-room-makarand-deshpande',
+        subtitle: 'Find your voice. Tell your truth.',
+        description: 'Makarand Deshpande\'s Writer\'s Room — part masterclass, part performance, part therapy. Excavate your deepest material and transform it into compelling work.',
+        instructor: 'makarand@thefoundationroom.in',
+        instrument: 'Writing', level: 'Masterclass', category: 'Acting',
+        tags: ['Scriptwriting', 'Theatre', 'Storytelling', 'Performance'],
+        cover_color: '#0A0A1A', cover_accent: '#C8A84B',
+        duration_weeks: 10,
+        chapters: [
+          {
+            title: 'The Raw Material',
+            lessons: [
+              { title: 'Writing From Memory — A Guided Session', type: 'video', duration_minutes: 40, materials: [
+                { type: 'video', title: 'Writer\'s Room session 01', url: 'https://www.youtube.com/embed/5qap5aO4i9A', duration_seconds: 2400, auto_ts: true },
+                { type: 'pdf',   title: 'Writing prompts', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+              ]},
+              { title: 'Reading — What Makes a Monologue Land', type: 'reading', duration_minutes: 30, materials: [
+                { type: 'url', title: 'Suggested reading list', url: 'https://en.wikipedia.org/wiki/Monologue' },
+              ]},
+            ],
+          },
+        ],
+      },
+    ];
+
+    for (const d of demos) {
+      const instructorId = pickInstructor(d.instructor);
+      if (!instructorId) continue; // no instructors seeded — skip
+
+      const cover = defaultCoverForLevel(d.level);
+      const courseRes = insertCourse.run(
+        d.title, d.slug, d.subtitle, d.description, instructorId,
+        d.instrument, d.level, d.category, JSON.stringify(d.tags),
+        d.cover_color, d.cover_accent, cover,
+        d.duration_weeks, 0, 'active', 0, 0
+      );
+      const courseId = courseRes.lastInsertRowid;
+
+      let lessonCount = 0;
+      d.chapters.forEach((ch, chIdx) => {
+        const chapterId = insertChapter.run(courseId, ch.title, chIdx + 1, ch.description || null).lastInsertRowid;
+        ch.lessons.forEach((l, lIdx) => {
+          const lessonId = insertLesson.run(
+            chapterId, courseId, l.title, lIdx + 1, l.type, null, l.duration_minutes || null
+          ).lastInsertRowid;
+          lessonCount++;
+          (l.materials || []).forEach((m, mIdx) => {
+            const matId = insertMaterial.run(
+              lessonId, m.type, m.title || null, m.url || null, m.duration_seconds || null, mIdx
+            ).lastInsertRowid;
+            if (m.type === 'video' && m.auto_ts) autoTimestamps(matId, m.duration_seconds);
+          });
+        });
+      });
+      bumpLessonCount.run(lessonCount, courseId);
+    }
+
+    console.log(`✅ Seeded ${demos.length} demo courses with chapters, lessons, materials and timestamps.`);
+  }
+}
+
+db.defaultCoverForLevel = defaultCoverForLevel;
+
+// Ensure the 5 homepage courses exist (idempotent — skips slugs that already exist).
+try {
+  require('./seed-homepage').ensureHomepageCourses(db);
+} catch (e) {
+  console.warn('[seed-homepage] failed:', e.message);
 }
 
 module.exports = db;

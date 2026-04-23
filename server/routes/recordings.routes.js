@@ -1,19 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
 const db = require('../db');
+const { persistUpload } = require('../lib/storage');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, process.env.UPLOAD_DIR || './data/uploads');
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, 'rec-' + unique + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage, limits: { fileSize: 200 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200 * 1024 * 1024 } });
 
 // GET /api/recordings/me
 router.get('/me', (req, res) => {
@@ -50,10 +41,10 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /api/recordings
-router.post('/', upload.single('audio'), (req, res) => {
+router.post('/', upload.single('audio'), async (req, res) => {
   try {
     const { course_id, lesson_id, title, duration_seconds, waveform_data, notes } = req.body;
-    const file_path = req.file ? `/uploads/${req.file.filename}` : null;
+    const file_path = await persistUpload(req.file, 'recordings');
 
     const result = db.prepare(`
       INSERT INTO recordings (student_id, course_id, lesson_id, title, file_path, duration_seconds, waveform_data, notes)

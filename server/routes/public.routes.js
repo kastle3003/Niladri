@@ -96,8 +96,32 @@ router.get('/courses/:slugOrId', (req, res) => {
     ).all(course.id);
 
     const lessons = db.prepare(
-      'SELECT id, chapter_id, title, order_index, type, duration_minutes FROM lessons WHERE course_id = ? ORDER BY order_index'
+      'SELECT id, chapter_id, title, order_index, type, duration_minutes, duration_seconds, is_preview FROM lessons WHERE course_id = ? ORDER BY order_index'
     ).all(course.id);
+
+    // Attach materials + timestamps only for preview lessons so anonymous
+    // visitors can play the Free Preview video without signing in.
+    const previewIds = lessons.filter(l => l.is_preview).map(l => l.id);
+    let previewMatById = {};
+    if (previewIds.length) {
+      const placeholders = previewIds.map(() => '?').join(',');
+      const mats = db.prepare(
+        `SELECT * FROM lesson_materials WHERE lesson_id IN (${placeholders}) ORDER BY order_index, id`
+      ).all(...previewIds);
+      const ts = db.prepare(`
+        SELECT t.* FROM video_timestamps t
+        JOIN lesson_materials m ON t.material_id = m.id
+        WHERE m.lesson_id IN (${placeholders})
+        ORDER BY t.material_id, t.time_seconds
+      `).all(...previewIds);
+      const tsByMat = {};
+      ts.forEach(x => { (tsByMat[x.material_id] = tsByMat[x.material_id] || []).push(x); });
+      mats.forEach(m => {
+        (previewMatById[m.lesson_id] = previewMatById[m.lesson_id] || [])
+          .push({ ...m, timestamps: tsByMat[m.id] || [] });
+      });
+    }
+    lessons.forEach(l => { l.materials = l.is_preview ? (previewMatById[l.id] || []) : []; });
 
     const chaptersWithLessons = chapters.map(ch => ({
       ...ch,

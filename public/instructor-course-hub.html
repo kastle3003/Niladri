@@ -236,7 +236,7 @@
       <div class="topbar-actions">
         <button class="btn btn-outline btn-sm" id="btn-publish" onclick="togglePublish()" style="display:none;">Publish</button>
         <button class="btn btn-primary btn-sm" onclick="openPanel('lesson')">+ Add Lesson</button>
-        <div class="topbar-avatar" id="topbar-avatar">--</div>
+        <div class="topbar-avatar" id="topbar-avatar" title="Click to log out" style="cursor:pointer;" onclick="if(confirm('Log out?')) logout()">--</div>
       </div>
     </header>
 
@@ -443,7 +443,7 @@
           <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="set-desc" style="height:100px;"></textarea></div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
             <div class="form-group"><label class="form-label">Level</label>
-              <select class="form-select" id="set-level"><option>Foundation</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+              <select class="form-select" id="set-level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Masterclass</option></select></div>
             <div class="form-group"><label class="form-label">Category</label>
               <select class="form-select" id="set-category"><option>Sitar</option><option>Vocals</option><option>Percussion</option><option>Dance</option><option>Film Songs</option><option>Acting</option><option>Theory</option></select></div>
             <div class="form-group"><label class="form-label">Duration (weeks)</label><input class="form-input" id="set-weeks" type="number" min="1"></div>
@@ -1010,7 +1010,7 @@ const PANELS = {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="form-group"><label class="form-label">Composer</label><input class="form-input" id="up-sm-composer" placeholder="Composer name"></div>
         <div class="form-group"><label class="form-label">Difficulty</label>
-          <select class="form-select" id="up-sm-diff"><option>Foundation</option><option>Intermediate</option><option>Advanced</option></select></div>
+          <select class="form-select" id="up-sm-diff"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="form-group"><label class="form-label">Instrument</label><input class="form-input" id="up-sm-instr" placeholder="Sitar, Vocals…"></div>

@@ -851,8 +851,8 @@
           <li><a href="/courses/djembe-world-percussions">Djembe &amp; Percussions — Taufiq Qureshi</a></li>
           <li><a href="/courses/hindustani-vocals-kirana-gharana">Hindustani Vocals — Sveta Kilpady</a></li>
           <li><a href="/courses/kathak-lucknow-gharana">Kathak — Guruma Sangeeta Sinha</a></li>
-          <li><a href="/courses/film-songs-the-playback-art">Film Songs — Milind Singh</a></li>
-          <li><a href="/courses/writers-room-makarand-deshpande">Acting — Makarand Deshpande</a></li>
+          <li><span style="opacity:0.55; cursor:default;">Film Songs — Milind Singh <em>(soon)</em></span></li>
+          <li><span style="opacity:0.55; cursor:default;">Acting — Makarand Deshpande <em>(soon)</em></span></li>
         </ul>
       </div>
       <div>
@@ -883,9 +883,9 @@
     <div class="footer-bar">
       <p class="footer-copy">&copy; 2026 The Foundation Room. All rights reserved.</p>
       <div class="footer-legal">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Refund Policy</a>
-        <a href="#">Terms</a>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/refund-policy">Refund Policy</a>
+        <a href="/terms">Terms</a>
       </div>
     </div>
   </footer>
@@ -1002,13 +1002,14 @@
       return `
         <div class="course-card" data-cat="${catKey}" data-id="${course.id}">
           <div class="course-cover" style="${coverStyle}">
-            <span class="course-watermark">${initials}</span>
-            <div class="course-overlay"></div>
-            <span class="course-level-tag">${levelText}</span>
+            ${course.cover_image_url ? `<img src="${course.cover_image_url}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">` : ''}
+            <span class="course-watermark" style="position:relative;z-index:2;">${initials}</span>
+            <div class="course-overlay" style="z-index:1;"></div>
+            <span class="course-level-tag" style="z-index:3;">${levelText}</span>
           </div>
           <div class="course-body">
-            <p class="course-taught-by">Taught by</p>
-            <h3 class="course-name">${instructor}</h3>
+            <h3 class="course-name">${course.title}</h3>
+            <p class="course-taught-by">Taught by ${instructor}</p>
             <p class="course-subject">${subject}</p>
             <div class="course-sep"></div>
             <p class="course-excerpt">${excerpt}</p>
@@ -1184,32 +1185,9 @@
         price: 11000,
         description: 'Explore the poetry of footwork and expression with Guruma Sangeeta Sinha. Every tattkar tells a story, every abhinaya a universe of feeling.'
       },
-      {
-        id: 5,
-        title: 'Film Songs & Vocal Performance',
-        subtitle: 'Studio Craft & Stage Presence',
-        instructor_name: 'Milind Singh',
-        instrument: 'Film Songs',
-        level: 'All Levels',
-        category: 'film songs',
-        lesson_count: 16,
-        duration_weeks: 8,
-        price: 8000,
-        description: 'Learn mic technique, studio recording craft and the art of selling a song from one of Bollywood\'s most celebrated music directors and vocalists.'
-      },
-      {
-        id: 6,
-        title: "Writer's Room & Acting",
-        subtitle: 'Theatre, Script & Performance',
-        instructor_name: 'Makarand Deshpande',
-        instrument: 'Acting',
-        level: 'All Levels',
-        category: 'acting',
-        lesson_count: 14,
-        duration_weeks: 7,
-        price: 8500,
-        description: 'Inhabit characters. Write from your truth. The legendary Makarand Deshpande guides you through the theatre of the self, from page to stage.'
-      }
+      // Film Songs (Milind Singh) and Writer's Room (Makarand Deshpande) temporarily
+      // removed from the fallback until the course rows are re-seeded — they are
+      // advertised as "Coming Soon" on the homepage instructor grid.
     ];
 
     /* ─── FETCH COURSES ─── */

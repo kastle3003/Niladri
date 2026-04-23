@@ -34,6 +34,11 @@ app.get('/courses/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/course-landing.html'));
 });
 
+// Legal page aliases (extension-less)
+app.get('/privacy',        (req, res) => res.sendFile(path.join(__dirname, '../public/privacy.html')));
+app.get('/terms',          (req, res) => res.sendFile(path.join(__dirname, '../public/terms.html')));
+app.get('/refund-policy',  (req, res) => res.sendFile(path.join(__dirname, '../public/refund-policy.html')));
+
 // ── Public (no-auth) API for landing pages ──
 app.use('/api/public', require('./routes/public.routes'));
 
@@ -49,6 +54,9 @@ app.use(express.static(path.join(__dirname, '../public'), {
 }));
 app.use('/uploads', express.static(path.join(__dirname, '../data/uploads')));
 
+// Wasabi-backed file redirect (presigned URLs). Legacy rows with /uploads/... still resolve above.
+app.use('/api/files', require('./routes/files.routes'));
+
 // Mount routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/courses', require('./middleware/auth'), require('./routes/courses.routes'));
@@ -62,6 +70,10 @@ app.use('/api/quotes', require('./middleware/auth'), require('./routes/quotes.ro
 app.use('/api/admin', require('./middleware/auth'), require('./routes/admin.routes'));
 app.use('/api/chapters', require('./middleware/auth'), require('./routes/chapters.routes'));
 app.use('/api/assignments', require('./middleware/auth'), require('./routes/assignments.routes'));
+app.use('/api/materials', require('./middleware/auth'), require('./routes/materials.routes'));
+app.use('/api/assets',    require('./middleware/auth'), require('./routes/assets.routes'));
+app.use('/api/progress',  require('./middleware/auth'), require('./routes/progress.routes'));
+app.use('/api/purchases', require('./middleware/auth'), require('./routes/purchases.routes'));
 
 // Sprint 1+2: Learning core & communication
 app.use('/api/quizzes', require('./middleware/auth'), require('./routes/quiz.routes'));
@@ -86,10 +98,16 @@ app.use('/api/roles', require('./middleware/auth'), require('./routes/roles.rout
 
 // CMS & Blog
 app.use('/api/cms', require('./middleware/auth'), require('./routes/cms.routes'));
+// Admin blog endpoints need JWT so req.user is populated for adminOnly — public endpoints stay open.
+app.use('/api/blog/admin', require('./middleware/auth'));
 app.use('/api/blog', require('./routes/blog.routes'));
 
-// SPA fallback — serve home for non-API, non-file routes
+// SPA fallback — serve home for non-API, non-file routes.
+// /api/* requests that fall through get a proper JSON 404 instead of a masked HTML response.
 app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Endpoint not found', path: req.path });
+  }
   const file = path.join(__dirname, '../public', req.path);
   if (require('fs').existsSync(file)) {
     res.sendFile(file);

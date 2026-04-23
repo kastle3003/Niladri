@@ -827,6 +827,18 @@
       }[role] || '/student-dashboard.html';
     }
 
+    // Deferred-enroll: if the visitor was sent here from a course page,
+    // bounce them back to it after login/signup instead of the role dashboard.
+    function postLoginDestination(user) {
+      const pending = sessionStorage.getItem('tfr_enroll_after_login');
+      if (pending) {
+        // Keep the key; the course page reads it to auto-trigger enroll.
+        // Numeric id → /courses/<id>; slug already works with the same route.
+        return '/courses/' + pending;
+      }
+      return roleHome(user.role);
+    }
+
     // ─── AUTH GUARD ───
     (function() {
       const token = localStorage.getItem('archive_token');
@@ -834,7 +846,7 @@
       if (token && user) {
         try {
           const u = JSON.parse(user);
-          window.location.replace(roleHome(u.role));
+          window.location.replace(postLoginDestination(u));
         } catch(e) { /* invalid JSON, stay on page */ }
       }
     })();
@@ -995,7 +1007,7 @@
         });
         localStorage.setItem('archive_token', data.token);
         localStorage.setItem('archive_user',  JSON.stringify(data.user));
-        window.location.href = roleHome(data.user.role);
+        window.location.href = postLoginDestination(data.user);
       } catch (err) {
         if (err.message && err.message.toLowerCase().includes('verify')) {
           pendingEmail = document.getElementById('login-email').value;
@@ -1053,7 +1065,7 @@
         localStorage.setItem('archive_user',  JSON.stringify(data.user));
         showPanel('panel-verified');
         setTimeout(() => {
-          window.location.href = roleHome(data.user.role);
+          window.location.href = postLoginDestination(data.user);
         }, 1500);
       } catch (err) {
         showError('otp-error', err.message);

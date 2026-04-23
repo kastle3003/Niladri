@@ -1,7 +1,22 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const db = require('../db');
 const requireRole = require('../middleware/role');
+const { persistUpload } = require('../lib/storage');
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+
+function slugify(str) {
+  return (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+function uniqueSlug(base, excludeId) {
+  let slug = base, n = 2;
+  while (db.prepare('SELECT id FROM courses WHERE slug = ? AND (? IS NULL OR id != ?)').get(slug, excludeId || null, excludeId || null)) {
+    slug = `${base}-${n++}`;
+  }
+  return slug;
+}
 
 // GET /api/courses
 router.get('/', (req, res) => {
@@ -72,38 +87,68 @@ router.get('/:id/chapters', (req, res) => {
   }
 });
 
-// POST /api/courses — instructor only
-router.post('/', requireRole('instructor'), (req, res) => {
+// POST /api/courses — instructor or admin
+router.post('/', requireRole(['instructor', 'admin']), upload.single('cover_image'), async (req, res) => {
   try {
-    const { title, subtitle, description, instrument, level, category, cover_color, cover_accent, duration_weeks } = req.body;
+    const { title, subtitle, description, instrument, level, category, cover_color, cover_accent, cover_image_url, duration_weeks, instructor_id } = req.body;
     if (!title) return res.status(400).json({ error: 'Title is required' });
 
-    const result = db.prepare(`
-      INSERT INTO courses (title, subtitle, description, instructor_id, instrument, level, category, cover_color, cover_accent, duration_weeks)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(title, subtitle || null, description || null, req.user.id, instrument || null, level || null, category || null, cover_color || '#2D4F1E', cover_accent || '#D1A14E', duration_weeks || null);
+    // Admin may create on behalf of another instructor; instructor is always the author
+    const ownerId = (req.user.role === 'admin' && instructor_id) ? instructor_id : req.user.id;
 
-    const course = db.prepare('SELECT * FROM courses WHERE id = ?').get(result.lastInsertRowid);
+    let finalCoverUrl = cover_image_url || (db.defaultCoverForLevel ? db.defaultCoverForLevel(level) : null);
+    if (req.file) {
+      finalCoverUrl = await persistUpload(req.file, 'courses/covers');
+    }
+
+    const result = db.prepare(`
+      INSERT INTO courses (title, subtitle, description, instructor_id, instrument, level, category, cover_color, cover_accent, cover_image_url, duration_weeks)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      title, subtitle || null, description || null, ownerId,
+      instrument || null, level || null, category || null,
+      cover_color || '#2D4F1E', cover_accent || '#D1A14E',
+      finalCoverUrl,
+      duration_weeks || null
+    );
+    const newId = result.lastInsertRowid;
+
+    // Auto-generate a unique slug so Preview links are pretty + future-proof
+    const slug = uniqueSlug(slugify(title) || `course-${newId}`, newId);
+    db.prepare('UPDATE courses SET slug = ? WHERE id = ?').run(slug, newId);
+
+    const course = db.prepare('SELECT * FROM courses WHERE id = ?').get(newId);
     res.status(201).json({ course });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// PUT /api/courses/:id — instructor only
-router.put('/:id', requireRole('instructor'), (req, res) => {
+// PUT /api/courses/:id — instructor (own course) or admin (any course)
+router.put('/:id', requireRole(['instructor', 'admin']), upload.single('cover_image'), async (req, res) => {
   try {
-    const { title, subtitle, description, instrument, level, category, cover_color, cover_accent, duration_weeks, status } = req.body;
-    const course = db.prepare('SELECT * FROM courses WHERE id = ? AND instructor_id = ?').get(req.params.id, req.user.id);
+    const { title, subtitle, description, instrument, level, category, cover_color, cover_accent, cover_image_url, duration_weeks, status } = req.body;
+    let course;
+    if (req.user.role === 'admin') {
+      course = db.prepare('SELECT * FROM courses WHERE id = ?').get(req.params.id);
+    } else {
+      course = db.prepare('SELECT * FROM courses WHERE id = ? AND instructor_id = ?').get(req.params.id, req.user.id);
+    }
     if (!course) return res.status(404).json({ error: 'Course not found or not authorized' });
 
+    let finalCoverUrl = cover_image_url !== undefined ? cover_image_url : course.cover_image_url;
+    if (req.file) {
+      finalCoverUrl = await persistUpload(req.file, 'courses/covers');
+    }
+
     db.prepare(`
-      UPDATE courses SET title = ?, subtitle = ?, description = ?, instrument = ?, level = ?, category = ?, cover_color = ?, cover_accent = ?, duration_weeks = ?, status = ?, updated_at = datetime('now')
+      UPDATE courses SET title = ?, subtitle = ?, description = ?, instrument = ?, level = ?, category = ?, cover_color = ?, cover_accent = ?, cover_image_url = ?, duration_weeks = ?, status = ?, updated_at = datetime('now')
       WHERE id = ?
     `).run(
       title || course.title, subtitle || course.subtitle, description || course.description,
       instrument || course.instrument, level || course.level, category || course.category,
       cover_color || course.cover_color, cover_accent || course.cover_accent,
+      finalCoverUrl,
       duration_weeks || course.duration_weeks, status || course.status, req.params.id
     );
 
@@ -114,10 +159,15 @@ router.put('/:id', requireRole('instructor'), (req, res) => {
   }
 });
 
-// DELETE /api/courses/:id — instructor only
-router.delete('/:id', requireRole('instructor'), (req, res) => {
+// DELETE /api/courses/:id — instructor (own) or admin (any)
+router.delete('/:id', requireRole(['instructor', 'admin']), (req, res) => {
   try {
-    const course = db.prepare('SELECT * FROM courses WHERE id = ? AND instructor_id = ?').get(req.params.id, req.user.id);
+    let course;
+    if (req.user.role === 'admin') {
+      course = db.prepare('SELECT * FROM courses WHERE id = ?').get(req.params.id);
+    } else {
+      course = db.prepare('SELECT * FROM courses WHERE id = ? AND instructor_id = ?').get(req.params.id, req.user.id);
+    }
     if (!course) return res.status(404).json({ error: 'Course not found or not authorized' });
 
     db.prepare('DELETE FROM courses WHERE id = ?').run(req.params.id);
