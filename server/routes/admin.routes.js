@@ -3,6 +3,7 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
+const { wasabiConfig } = require('../lib/storage');
 
 // ── Middleware: Admin-only ──
 function adminOnly(req, res, next) {
@@ -263,7 +264,7 @@ router.post('/users', adminOnly, (req, res) => {
 
     const hash = bcrypt.hashSync(password, 10);
     const initials = (first_name[0] + (last_name[0] || '')).toUpperCase();
-    const validRole = ['student','instructor','teaching_assistant','admin'].includes(role) ? role : 'student';
+    const validRole = ['student','instructor','admin'].includes(role) ? role : 'student';
 
     const result = db.prepare(`
       INSERT INTO users (email, password_hash, first_name, last_name, role, instrument, avatar_initials, verified)
@@ -284,7 +285,7 @@ router.put('/users/:id', adminOnly, (req, res) => {
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (role && ['student','instructor','teaching_assistant','admin'].includes(role)) {
+    if (role && ['student','instructor','admin'].includes(role)) {
       db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, req.params.id);
     }
     if (first_name) db.prepare('UPDATE users SET first_name = ? WHERE id = ?').run(first_name, req.params.id);
@@ -544,6 +545,15 @@ function fmtBytes(b) {
 }
 
 // GET /api/admin/storage — full storage breakdown
+// GET /api/admin/storage-info — read-only Wasabi connection info (no secrets)
+router.get('/storage-info', adminOnly, (req, res) => {
+  try {
+    res.json(wasabiConfig());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/storage', adminOnly, (req, res) => {
   try {
     const dataDir = path.join(__dirname, '../../data');
@@ -600,7 +610,6 @@ router.get('/storage', adminOnly, (req, res) => {
 const DEFAULT_PERMISSIONS = {
   admin: ['manage_users','manage_all_courses','admin_panel','view_reports','billing','platform_config','content_moderation'],
   instructor: ['create_courses','manage_own_courses','view_enrollments','grade_assignments','send_announcements','manage_sheet_music'],
-  teaching_assistant: ['view_assigned_courses','grade_assignments','send_announcements','manage_resources'],
   student: ['view_enrolled_courses','submit_assignments','access_archive','take_quizzes','practice_log','download_resources']
 };
 

@@ -45,7 +45,7 @@ router.get('/', (req, res) => {
     }
 
     // Students (instructor only)
-    if ((type === 'all' || type === 'students') && ['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if ((type === 'all' || type === 'students') && ['instructor', 'admin'].includes(req.user.role)) {
       const students = db.prepare(`
         SELECT id, first_name, last_name, email, instrument, role
         FROM users

@@ -305,7 +305,7 @@
     document.getElementById('topbar-avatar').textContent = currentUser.avatar_initials || (currentUser.first_name[0] + currentUser.last_name[0]);
     document.getElementById('nav-dashboard').href = currentUser.role === 'instructor' ? '/instructor-dashboard.html' : '/student-dashboard.html';
 
-    if (['instructor', 'admin', 'teaching_assistant'].includes(currentUser.role)) {
+    if (['instructor', 'admin'].includes(currentUser.role)) {
       document.getElementById('schedule-btn').style.display = '';
       document.getElementById('schedule-btn-main').style.display = '';
       loadCoursesForSelect();

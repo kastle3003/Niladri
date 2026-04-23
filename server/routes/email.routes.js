@@ -136,7 +136,7 @@ function mergeVariables(template, variables = {}) {
 // GET /api/email/templates
 router.get('/templates', (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
     }
     const templates = db.prepare('SELECT * FROM email_templates ORDER BY name').all();
@@ -149,7 +149,7 @@ router.get('/templates', (req, res) => {
 // GET /api/email/templates/:name
 router.get('/templates/:name', (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
     }
     const template = db.prepare('SELECT * FROM email_templates WHERE name = ?').get(req.params.name);
@@ -196,7 +196,7 @@ router.put('/templates/:name', (req, res) => {
 // POST /api/email/send
 router.post('/send', (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
     }
 
@@ -229,7 +229,7 @@ router.post('/send', (req, res) => {
 // GET /api/email/logs
 router.get('/logs', (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
     }
     const logs = db.prepare('SELECT * FROM email_logs ORDER BY sent_at DESC LIMIT 200').all();

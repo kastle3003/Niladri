@@ -67,7 +67,7 @@ router.get('/:id', (req, res) => {
 // POST /api/live-sessions  (instructor)
 router.post('/', (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
     }
 
@@ -95,7 +95,7 @@ router.post('/', (req, res) => {
 // PUT /api/live-sessions/:id  (instructor)
 router.put('/:id', (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
     }
 
@@ -190,7 +190,7 @@ router.post('/:id/leave', (req, res) => {
 // PUT /api/live-sessions/:id/status  (instructor)
 router.put('/:id/status', (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
     }
 

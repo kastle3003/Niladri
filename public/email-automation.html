@@ -298,7 +298,7 @@
 
   document.addEventListener('userLoaded', (e) => {
     currentUser = e.detail;
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(currentUser.role)) {
+    if (!['instructor', 'admin'].includes(currentUser.role)) {
       window.location.href = '/student-dashboard.html';
       return;
     }

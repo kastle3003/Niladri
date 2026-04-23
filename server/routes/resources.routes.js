@@ -88,7 +88,7 @@ router.get('/:id/download', async (req, res) => {
 // POST /api/resources  (instructor upload)
 router.post('/', upload.single('file'), async (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
     }
 

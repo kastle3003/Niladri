@@ -558,7 +558,12 @@ db.exec(`
 
 // ── Role integrity: 3 allowed roles (student, instructor, admin) ──
 // SQLite can't add CHECK to existing column via ALTER, so we use triggers.
-// Any existing rows with invalid roles are normalised to 'student'.
+// Former 'teaching_assistant' users are merged into 'instructor' (the role
+// was retired; their permissions were already a subset of instructor).
+db.prepare(
+  `UPDATE users SET role = 'instructor' WHERE role = 'teaching_assistant'`
+).run();
+// Any remaining rows with invalid/null roles are normalised to 'student'.
 db.prepare(
   `UPDATE users SET role = 'student' WHERE role IS NULL OR role NOT IN ('student','instructor','admin')`
 ).run();

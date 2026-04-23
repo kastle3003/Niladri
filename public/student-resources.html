@@ -345,7 +345,7 @@
     currentUser = e.detail;
     document.getElementById('topbar-avatar').textContent = currentUser.avatar_initials || (currentUser.first_name[0] + currentUser.last_name[0]);
 
-    if (['instructor', 'admin', 'teaching_assistant'].includes(currentUser.role)) {
+    if (['instructor', 'admin'].includes(currentUser.role)) {
       const btnTop = document.getElementById('upload-btn-top');
       const btnMain = document.getElementById('upload-btn-main');
       if (btnTop) btnTop.style.display = '';

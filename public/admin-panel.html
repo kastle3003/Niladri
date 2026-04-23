@@ -1026,7 +1026,6 @@
                 <option value="">All Roles</option>
                 <option value="admin">Admin</option>
                 <option value="instructor">Instructor</option>
-                <option value="teaching_assistant">Teaching Assistant</option>
                 <option value="student">Student</option>
               </select>
               <span style="font-size:13px;color:var(--text-3);" id="users-count-label">Loading…</span>
@@ -1188,103 +1187,41 @@
         </div>
       </div>
 
-      <!-- ═══════════ S3 STORAGE TAB ═══════════ -->
+      <!-- ═══════════ WASABI STORAGE TAB ═══════════ -->
       <div class="tab-panel" id="tab-s3">
         <div style="margin-bottom:24px;">
-          <div class="config-card-title" style="margin-bottom:14px;">Setup Guide — AWS S3</div>
-          <div class="accordion-item open" id="acc-s3-1">
-            <div class="accordion-header" onclick="toggleAccordion('acc-s3-1')">
-              <div class="accordion-num">1</div>
-              <div class="accordion-label">Create AWS Account</div>
-              <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="config-card-title" style="margin-bottom:14px;">Wasabi Object Storage</div>
+          <div class="accordion-item open">
+            <div class="accordion-header" style="cursor:default;">
+              <div class="accordion-num">ℹ</div>
+              <div class="accordion-label">How uploads work</div>
             </div>
-            <div class="accordion-body">Go to <code>aws.amazon.com</code>, create an account or sign in. You'll need a valid email, phone, and credit card (free tier sufficient).</div>
-          </div>
-          <div class="accordion-item" id="acc-s3-2">
-            <div class="accordion-header" onclick="toggleAccordion('acc-s3-2')">
-              <div class="accordion-num">2</div>
-              <div class="accordion-label">Create S3 Bucket</div>
-              <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            <div class="accordion-body">
+              All file uploads (avatars, course covers, lesson videos, materials, resources, sheet music, recordings, submissions, message attachments) are stored in the Wasabi bucket configured below. Credentials live in the server's <code>.env</code> file and are never editable from the admin UI. To change the bucket or rotate keys, edit <code>.env</code> and restart the server.
             </div>
-            <div class="accordion-body">Go to <strong>S3 → Create Bucket</strong>. Choose a unique name (e.g. <code>tfr-lms-media</code>). Select your region. Uncheck <strong>"Block all public access"</strong> if serving files publicly.</div>
-          </div>
-          <div class="accordion-item" id="acc-s3-3">
-            <div class="accordion-header" onclick="toggleAccordion('acc-s3-3')">
-              <div class="accordion-num">3</div>
-              <div class="accordion-label">Create IAM User &amp; Get Keys</div>
-              <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            <div class="accordion-body">Go to <strong>IAM → Users → Add User</strong>. Attach <code>AmazonS3FullAccess</code> policy. Create access key and download CSV.</div>
-          </div>
-          <div class="accordion-item" id="acc-s3-4">
-            <div class="accordion-header" onclick="toggleAccordion('acc-s3-4')">
-              <div class="accordion-num">4</div>
-              <div class="accordion-label">Configure CORS</div>
-              <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            <div class="accordion-body">In S3 bucket → <strong>Permissions → CORS</strong>:<pre>[{"AllowedHeaders":["*"],"AllowedMethods":["GET","PUT","POST","DELETE"],"AllowedOrigins":["*"],"ExposeHeaders":[]}]</pre></div>
           </div>
         </div>
 
         <div class="config-card">
-          <div class="config-card-title">S3 Storage Configuration</div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label class="form-label">AWS Access Key ID</label>
-              <div class="input-wrap">
-                <input class="form-input" id="s3-access-key" type="text" placeholder="AKIAIOSFODNN7EXAMPLE">
-                <button class="eye-btn" onclick="toggleEye('s3-access-key', this)" title="Toggle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">AWS Secret Access Key</label>
-              <div class="input-wrap">
-                <input class="form-input" id="s3-secret-key" type="password" placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLE">
-                <button class="eye-btn" onclick="toggleEye('s3-secret-key', this)" title="Toggle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-              </div>
-            </div>
+          <div class="config-card-title">Current Connection</div>
+          <div id="wasabi-info-wrap" style="display:grid;grid-template-columns:180px 1fr;gap:12px 24px;font-size:13px;">
+            <div style="color:var(--text-3);">Status</div>
+            <div id="wasabi-status">Loading…</div>
+            <div style="color:var(--text-3);">Bucket</div>
+            <div id="wasabi-bucket" style="font-family:monospace;">—</div>
+            <div style="color:var(--text-3);">Region</div>
+            <div id="wasabi-region" style="font-family:monospace;">—</div>
+            <div style="color:var(--text-3);">Endpoint</div>
+            <div id="wasabi-endpoint" style="font-family:monospace;word-break:break-all;">—</div>
+            <div style="color:var(--text-3);">Access Key</div>
+            <div id="wasabi-access-key" style="font-family:monospace;">—</div>
+            <div style="color:var(--text-3);">Local Fallback</div>
+            <div id="wasabi-fallback" style="font-family:monospace;">—</div>
           </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label class="form-label">AWS Region</label>
-              <select class="form-select" id="s3-region">
-                <option value="us-east-1">US East (N. Virginia) — us-east-1</option>
-                <option value="us-west-2">US West (Oregon) — us-west-2</option>
-                <option value="eu-west-1">EU (Ireland) — eu-west-1</option>
-                <option value="ap-south-1">Asia Pacific (Mumbai) — ap-south-1</option>
-                <option value="ap-southeast-1">Asia Pacific (Singapore) — ap-southeast-1</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">S3 Bucket Name</label>
-              <input class="form-input" id="s3-bucket" type="text" placeholder="tfr-lms-media">
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label class="form-label">Custom CDN URL <span style="font-weight:400;color:var(--text-3);text-transform:none;letter-spacing:0;">(optional)</span></label>
-              <input class="form-input" id="s3-cdn-url" type="text" placeholder="https://cdn.yourdomain.com">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Storage Path Prefix</label>
-              <input class="form-input" id="s3-path-prefix" type="text" value="tfr-lms/" placeholder="tfr-lms/">
-            </div>
-          </div>
-          <div class="toggle-wrap">
-            <label class="toggle">
-              <input type="checkbox" id="s3-public-access">
-              <div class="toggle-track"></div>
-            </label>
-            <span class="toggle-label">Enable Public Access (serve media without signed URLs)</span>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-outline" id="s3-test-btn" onclick="testS3()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
-              Test Connection
-            </button>
-            <button class="btn btn-primary" id="s3-save-btn" onclick="saveS3()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              Save Configuration
+          <div class="btn-row" style="margin-top:18px;">
+            <button class="btn btn-outline" id="wasabi-refresh-btn" onclick="loadWasabiInfo()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Refresh
             </button>
           </div>
         </div>
@@ -1420,22 +1357,6 @@
               <span class="perm-tag">Grade Assignments</span>
               <span class="perm-tag">Send Announcements</span>
               <span class="perm-tag">Manage Sheet Music</span>
-            </div>
-          </div>
-
-          <div class="role-card">
-            <div class="role-header">
-              <div>
-                <div class="role-name" style="color:var(--text);">Teaching Assistant</div>
-                <div class="role-desc">Assist instructors with assigned courses</div>
-              </div>
-              <span class="badge badge-muted">Scoped Role</span>
-            </div>
-            <div class="perm-tags">
-              <span class="perm-tag">View Assigned Courses</span>
-              <span class="perm-tag">Grade Assignments</span>
-              <span class="perm-tag">Send Announcements</span>
-              <span class="perm-tag">Manage Resources</span>
             </div>
           </div>
 
@@ -1623,7 +1544,6 @@
         <select class="form-select" id="new-role">
           <option value="student">Student</option>
           <option value="instructor">Instructor</option>
-          <option value="teaching_assistant">Teaching Assistant</option>
           <option value="admin">Admin</option>
         </select>
       </div>
@@ -1892,6 +1812,7 @@
     if (name === 'subscriptions') loadSubscriptions();
     if (name === 'moderation') { loadFlags(); loadStorageBreakdown(); }
     if (name === 'roles') loadPermissions();
+    if (name === 's3') loadWasabiInfo();
   }
 
   // ═══════════ Accordion ═══════════
@@ -2061,7 +1982,7 @@
     const roleBadge = (r) => {
       const map = {
         admin: 'badge-gold', instructor: 'badge-blue',
-        teaching_assistant: 'badge-green', student: 'badge-muted'
+        student: 'badge-muted'
       };
       return `<span class="badge ${map[r] || 'badge-muted'}">${esc(r)}</span>`;
     };
@@ -2077,7 +1998,6 @@
             <select class="filter-select" style="min-width:130px;" onchange="changeUserRole(${u.id}, this.value)" ${u.role === 'admin' ? 'disabled' : ''}>
               <option value="student" ${u.role==='student'?'selected':''}>Student</option>
               <option value="instructor" ${u.role==='instructor'?'selected':''}>Instructor</option>
-              <option value="teaching_assistant" ${u.role==='teaching_assistant'?'selected':''}>Teaching Assistant</option>
               <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
             </select>
           </td>
@@ -2437,42 +2357,24 @@
     }
   }
 
-  async function testS3() {
-    const btn = document.getElementById('s3-test-btn');
-    btn.disabled = true; btn.textContent = 'Testing…';
+  async function loadWasabiInfo() {
+    const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setTxt('wasabi-status', 'Loading…');
     try {
-      const res = await api.post('/api/admin/s3/test', {
-        access_key_id: document.getElementById('s3-access-key').value,
-        secret_access_key: document.getElementById('s3-secret-key').value,
-        region: document.getElementById('s3-region').value,
-        bucket_name: document.getElementById('s3-bucket').value
-      });
-      toast(res.message + (res.bucket ? ' (' + res.bucket + ')' : ''));
-    } catch (e) { toast(e.message, 'error'); }
-    finally {
-      btn.disabled = false;
-      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg> Test Connection`;
-    }
-  }
-
-  async function saveS3() {
-    const btn = document.getElementById('s3-save-btn');
-    btn.disabled = true; btn.textContent = 'Saving…';
-    try {
-      await api.put('/api/admin/config/s3', {
-        access_key_id: document.getElementById('s3-access-key').value,
-        secret_access_key: document.getElementById('s3-secret-key').value,
-        region: document.getElementById('s3-region').value,
-        bucket_name: document.getElementById('s3-bucket').value,
-        cdn_url: document.getElementById('s3-cdn-url').value,
-        path_prefix: document.getElementById('s3-path-prefix').value,
-        public_access: document.getElementById('s3-public-access').checked
-      });
-      toast('S3 configuration saved.');
-    } catch (e) { toast(e.message, 'error'); }
-    finally {
-      btn.disabled = false;
-      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Configuration`;
+      const info = await api.get('/api/admin/storage-info');
+      const statusEl = document.getElementById('wasabi-status');
+      if (info.enabled) {
+        statusEl.innerHTML = '<span class="badge badge-green">● Connected</span>';
+      } else {
+        statusEl.innerHTML = '<span class="badge badge-muted">○ Disabled — using local disk fallback</span>';
+      }
+      setTxt('wasabi-bucket', info.bucket || '—');
+      setTxt('wasabi-region', info.region || '—');
+      setTxt('wasabi-endpoint', info.endpoint || '—');
+      setTxt('wasabi-access-key', info.access_key_preview || '—');
+      setTxt('wasabi-fallback', info.local_fallback_dir || '—');
+    } catch (e) {
+      setTxt('wasabi-status', 'Failed to load: ' + e.message);
     }
   }
 
@@ -2553,7 +2455,7 @@
     try {
       const collect = (root) => Array.from(root.querySelectorAll('.perm-tag')).map(t => t.textContent.trim().toLowerCase().replace(/\s+/g,'_'));
       const cards = document.querySelectorAll('#tab-roles .role-card');
-      const map = { 'admin':'admin','instructor':'instructor','teaching assistant':'teaching_assistant','student':'student' };
+      const map = { 'admin':'admin','instructor':'instructor','student':'student' };
       const permissions = {};
       cards.forEach(card => {
         const roleName = card.querySelector('.role-name').textContent.trim().toLowerCase();

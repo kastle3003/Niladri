@@ -145,7 +145,7 @@ router.get('/history', (req, res) => {
 // GET /api/payments/admin  (instructor/admin)
 router.get('/admin', (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Forbidden' });
     }
     const payments = db.prepare(`

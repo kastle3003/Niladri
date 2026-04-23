@@ -50,7 +50,7 @@
 - **Practice log** with GitHub-style heatmap
 - **Global search** across courses, sheet music, students, resources
 - **Email automation** with 4 seeded HTML templates
-- **Role-based access** — Student, Instructor, Teaching Assistant, Admin
+- **Role-based access** — Student, Instructor, Admin
 - **Admin panel** — S3, SMTP, Razorpay configuration with step-by-step guides
 
 ---

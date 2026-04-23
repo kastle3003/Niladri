@@ -21,10 +21,13 @@ function signToken(user) {
 // POST /api/auth/register
 router.post('/register', (req, res) => {
   try {
-    const { email, password, first_name, last_name, role = 'student', instrument } = req.body;
+    const { email, password, first_name, last_name, instrument } = req.body;
     if (!email || !password || !first_name || !last_name) {
       return res.status(400).json({ error: 'Email, password, first_name, and last_name are required' });
     }
+    // Public self-registration is student-only. Instructor/admin accounts are created
+    // via the admin CMS (POST /api/cms/instructors, POST /api/admin/users).
+    const role = 'student';
     const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
     if (existing) return res.status(409).json({ error: 'Email already registered' });
 

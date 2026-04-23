@@ -265,7 +265,7 @@
     document.getElementById('topbar-avatar').textContent = currentUser.avatar_initials || (currentUser.first_name[0] + currentUser.last_name[0]);
     document.getElementById('nav-dashboard').href = currentUser.role === 'instructor' ? '/instructor-dashboard.html' : '/student-dashboard.html';
 
-    if (['instructor', 'admin', 'teaching_assistant'].includes(currentUser.role)) {
+    if (['instructor', 'admin'].includes(currentUser.role)) {
       document.getElementById('new-ann-btn').style.display = '';
       document.getElementById('new-ann-btn-main').style.display = '';
       loadCoursesForSelects();
@@ -319,7 +319,7 @@
   function renderCard(a) {
     const initials = a.instructor_initials || (a.instructor_name ? a.instructor_name.split(' ').map(w => w[0]).slice(0,2).join('') : '?');
     const isOwn = currentUser && a.instructor_id === currentUser.id;
-    const isInstructor = currentUser && ['instructor', 'admin', 'teaching_assistant'].includes(currentUser.role);
+    const isInstructor = currentUser && ['instructor', 'admin'].includes(currentUser.role);
 
     return `
       <div class="ann-card${a.pinned ? ' pinned' : ''}" id="ann-${a.id}">

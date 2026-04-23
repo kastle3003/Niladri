@@ -1887,10 +1887,56 @@
   }
 
   async function addMaterial(lessonId, type) {
+    // URL type always creates a blank row for pasting. Other types open a file
+    // picker first; cancelling the picker falls back to the blank-row flow.
+    if (type === 'url') {
+      try {
+        await api.post('/api/materials', { lesson_id: lessonId, type, title: '', url: '' });
+        await loadMaterials(lessonId);
+      } catch (e) { toast(e.message, 'error'); }
+      return;
+    }
+
+    const accept = type === 'video' ? 'video/*' : type === 'image' ? 'image/*' : type === 'pdf' ? 'application/pdf,.pdf' : '';
+    const picker = document.createElement('input');
+    picker.type = 'file';
+    picker.accept = accept;
+    picker.style.display = 'none';
+    document.body.appendChild(picker);
+
+    const pickedFile = await new Promise((resolve) => {
+      let resolved = false;
+      picker.addEventListener('change', () => {
+        resolved = true;
+        resolve(picker.files && picker.files[0] ? picker.files[0] : null);
+      }, { once: true });
+      // If the user cancels, most browsers fire 'cancel' (newer) or just nothing.
+      picker.addEventListener('cancel', () => { if (!resolved) resolve(null); }, { once: true });
+      window.addEventListener('focus', () => { setTimeout(() => { if (!resolved) resolve(null); }, 300); }, { once: true });
+      picker.click();
+    });
+    picker.remove();
+
+    if (!pickedFile) {
+      // User cancelled: create blank row with URL input as fallback.
+      try {
+        await api.post('/api/materials', { lesson_id: lessonId, type, title: '', url: '' });
+        await loadMaterials(lessonId);
+      } catch (e) { toast(e.message, 'error'); }
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('lesson_id', lessonId);
+    fd.append('type', type);
+    fd.append('title', pickedFile.name.replace(/\.[^.]+$/, ''));
+    fd.append('file', pickedFile);
+    toast(`Uploading ${pickedFile.name}…`, 'success');
     try {
-      await api.post('/api/materials', { lesson_id: lessonId, type, title: '', url: '' });
+      await api.upload('/api/materials', fd);
       await loadMaterials(lessonId);
-    } catch (e) { toast(e.message, 'error'); }
+      toast(`${pickedFile.name} uploaded`, 'success');
+    } catch (e) { toast(e.message || 'Upload failed', 'error'); }
   }
 
   async function updateMaterial(materialId, field, value) {

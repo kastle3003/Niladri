@@ -109,4 +109,20 @@ async function deleteObject(keyOrUrl) {
 
 function wasabiEnabled() { return !!s3; }
 
-module.exports = { persistUpload, presignedUrl, deleteObject, wasabiEnabled };
+// Non-secret connection info for the admin UI. Never returns access keys.
+function wasabiConfig() {
+  const region = process.env.WASABI_REGION || null;
+  const bucket = process.env.WASABI_BUCKET || null;
+  const endpoint = process.env.WASABI_ENDPOINT || (region ? `https://s3.${region}.wasabisys.com` : null);
+  const accessKey = process.env.WASABI_ACCESS_KEY || '';
+  return {
+    enabled: wasabiEnabled(),
+    bucket,
+    region,
+    endpoint,
+    access_key_preview: accessKey ? `${accessKey.slice(0, 4)}…${accessKey.slice(-4)}` : null,
+    local_fallback_dir: LOCAL_UPLOAD_DIR,
+  };
+}
+
+module.exports = { persistUpload, presignedUrl, deleteObject, wasabiEnabled, wasabiConfig };

@@ -82,7 +82,7 @@ router.get('/:id', (req, res) => {
 // POST /api/announcements  (instructor)
 router.post('/', (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
     }
 
@@ -182,7 +182,7 @@ router.delete('/:id', (req, res) => {
 // POST /api/announcements/:id/pin  (instructor)
 router.post('/:id/pin', (req, res) => {
   try {
-    if (!['instructor', 'admin', 'teaching_assistant'].includes(req.user.role)) {
+    if (!['instructor', 'admin'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Instructor access required' });
     }
 

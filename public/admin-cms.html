@@ -508,6 +508,7 @@
       z-index: 201;
       display: flex;
       flex-direction: column;
+      transform: translateX(480px);
     }
     .drawer-header {
       padding: 24px 28px 20px;
@@ -857,7 +858,7 @@
                 <th>Level</th>
                 <th>Status</th>
                 <th>Lessons</th>
-                <th style="width:110px">Actions</th>
+                <th style="width:150px">Actions</th>
               </tr>
             </thead>
             <tbody id="coursesTbody">
@@ -1515,7 +1516,7 @@ async function loadCourses() {
   const tbody = document.getElementById('coursesTbody');
   tbody.innerHTML = '<tr><td colspan="7"><div class="loading-rows"><div class="loading-row"></div><div class="loading-row"></div><div class="loading-row"></div></div></td></tr>';
   try {
-    const courses = await cmsApi('GET', '/api/cms/courses');
+    const { courses } = await cmsApi('GET', '/api/cms/courses');
     if (!courses || !courses.length) {
       tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📚</div><p>No courses yet. Create one!</p></div></td></tr>';
       return;
@@ -1530,7 +1531,8 @@ async function loadCourses() {
         <td class="td-muted">${c.lesson_count||c.lessons||0}</td>
         <td>
           <div class="actions">
-            <button class="btn-icon" title="Edit" onclick="editCourse(${JSON.stringify(c).replace(/"/g,'&quot;')})">✏️</button>
+            <button class="btn-icon" title="Manage Chapters & Lessons" onclick="window.open('/course-manager.html#${c.id}', '_blank')">📂</button>
+            <button class="btn-icon" title="Edit metadata" onclick="editCourse(${JSON.stringify(c).replace(/"/g,'&quot;')})">✏️</button>
             <button class="btn-icon success" title="Toggle Status" onclick="toggleCourseStatus('${c.id}','${c.status}')">⟳</button>
             <button class="btn-icon danger" title="Delete" onclick="deleteCourse('${c.id}','${esc(c.title)}')">🗑</button>
           </div>
@@ -1551,7 +1553,7 @@ function editCourse(course) {
 
 async function loadInstructorsIntoSelect(selectedId) {
   try {
-    const instructors = await cmsApi('GET', '/api/cms/instructors');
+    const { instructors } = await cmsApi('GET', '/api/cms/instructors');
     const sel = document.getElementById('f-instructor');
     if (!sel) return;
     sel.innerHTML = '<option value="">Select instructor…</option>' +
@@ -1600,7 +1602,7 @@ async function loadInstructors() {
   const tbody = document.getElementById('instructorsTbody');
   tbody.innerHTML = '<tr><td colspan="6"><div class="loading-rows"><div class="loading-row"></div><div class="loading-row"></div></div></td></tr>';
   try {
-    const instructors = await cmsApi('GET', '/api/cms/instructors');
+    const { instructors } = await cmsApi('GET', '/api/cms/instructors');
     if (!instructors || !instructors.length) {
       tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👤</div><p>No instructors yet.</p></div></td></tr>';
       return;
@@ -1643,7 +1645,7 @@ async function loadBlog() {
   const tbody = document.getElementById('blogTbody');
   tbody.innerHTML = '<tr><td colspan="7"><div class="loading-rows"><div class="loading-row"></div><div class="loading-row"></div></div></td></tr>';
   try {
-    const posts = await cmsApi('GET', '/api/cms/blog');
+    const { posts } = await cmsApi('GET', '/api/cms/blog');
     if (!posts || !posts.length) {
       tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📝</div><p>No posts yet.</p></div></td></tr>';
       return;
@@ -1697,7 +1699,7 @@ async function loadStudents() {
   const tbody = document.getElementById('studentsTbody');
   tbody.innerHTML = '<tr><td colspan="5"><div class="loading-rows"><div class="loading-row"></div><div class="loading-row"></div></div></td></tr>';
   try {
-    const students = await cmsApi('GET', '/api/cms/students');
+    const { students } = await cmsApi('GET', '/api/cms/students');
     if (!students || !students.length) {
       tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">🎓</div><p>No students yet.</p></div></td></tr>';
       return;

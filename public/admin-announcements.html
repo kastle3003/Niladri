@@ -321,7 +321,7 @@
   function renderCard(a) {
     const initials = a.instructor_initials || (a.instructor_name ? a.instructor_name.split(' ').map(w => w[0]).slice(0,2).join('') : '?');
     const isOwn = currentUser && a.instructor_id === currentUser.id;
-    const isInstructor = currentUser && ['instructor', 'admin', 'teaching_assistant'].includes(currentUser.role);
+    const isInstructor = currentUser && ['instructor', 'admin'].includes(currentUser.role);
 
     return `
       <div class="ann-card${a.pinned ? ' pinned' : ''}" id="ann-${a.id}">
