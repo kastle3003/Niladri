@@ -26,13 +26,22 @@ function canEditLesson(req, lessonId) {
   return { ok: false, code: 403 };
 }
 
-// GET /api/lessons?course_id=X
+// GET /api/lessons?course_id=X  (instructor authoring view — owner-gated when course_id given)
 router.get('/', (req, res) => {
   try {
     const { course_id } = req.query;
+    // Instructors may only read lessons for courses they own. Admins see all.
+    if (course_id && req.user && req.user.role === 'instructor' && !canEditCourse(req, course_id)) {
+      return res.status(403).json({ error: 'Not authorized to view this course' });
+    }
     let query = 'SELECT * FROM lessons WHERE 1=1';
     const params = [];
     if (course_id) { query += ' AND course_id = ?'; params.push(course_id); }
+    // Instructors without course_id: limit to their own courses' lessons
+    if (!course_id && req.user && req.user.role === 'instructor') {
+      query += ' AND course_id IN (SELECT id FROM courses WHERE instructor_id = ?)';
+      params.push(req.user.id);
+    }
     query += ' ORDER BY course_id, order_index';
     const lessons = db.prepare(query).all(...params);
     res.json({ lessons });

@@ -19,6 +19,10 @@ function uniqueSlug(base, excludeId) {
 }
 
 // GET /api/courses
+// Role-aware listing:
+//   - instructor  → only courses they own (regardless of query params)
+//   - admin       → all courses
+//   - student/etc → active courses (filterable via query params)
 router.get('/', (req, res) => {
   try {
     const { level, category, instrument, search, status } = req.query;
@@ -30,8 +34,14 @@ router.get('/', (req, res) => {
     `;
     const params = [];
 
-    if (status && status !== 'all') { query += ' AND c.status = ?'; params.push(status); }
-    else if (!status) { query += " AND c.status = 'active'"; }
+    if (req.user && req.user.role === 'instructor') {
+      query += ' AND c.instructor_id = ?';
+      params.push(req.user.id);
+      // Instructors see all their courses regardless of status (drafts, active, archived)
+    } else {
+      if (status && status !== 'all') { query += ' AND c.status = ?'; params.push(status); }
+      else if (!status) { query += " AND c.status = 'active'"; }
+    }
     if (level) { query += ' AND c.level = ?'; params.push(level); }
     if (category) { query += ' AND c.category = ?'; params.push(category); }
     if (instrument) { query += ' AND c.instrument = ?'; params.push(instrument); }
@@ -116,6 +126,15 @@ router.post('/', requireRole(['instructor', 'admin']), upload.single('cover_imag
     // Auto-generate a unique slug so Preview links are pretty + future-proof
     const slug = uniqueSlug(slugify(title) || `course-${newId}`, newId);
     db.prepare('UPDATE courses SET slug = ? WHERE id = ?').run(slug, newId);
+
+    // Seed 5 default Foundations (A-E) so the course-landing tabs render
+    // a meaningful structure out of the box; instructor can rename/add/delete.
+    const insertChapter = db.prepare(
+      'INSERT INTO chapters (course_id, title, order_index, description) VALUES (?, ?, ?, ?)'
+    );
+    ['A', 'B', 'C', 'D', 'E'].forEach((letter, i) => {
+      insertChapter.run(newId, `Foundation '${letter}'`, i, '');
+    });
 
     const course = db.prepare('SELECT * FROM courses WHERE id = ?').get(newId);
     res.status(201).json({ course });

@@ -21,11 +21,16 @@ function canEditChapter(req, chapterId) {
   return { ok: false, code: 403 };
 }
 
-// GET /api/chapters?course_id=X
+// GET /api/chapters?course_id=X  (instructor authoring view — owner-gated)
 router.get('/', (req, res) => {
   try {
     const { course_id } = req.query;
     if (!course_id) return res.status(400).json({ error: 'course_id is required' });
+    // Instructors may only read chapters for courses they own. Admins see all.
+    // (Students read chapters via GET /api/courses/:id/chapters with progress merge.)
+    if (req.user && req.user.role === 'instructor' && !canEditCourse(req, course_id)) {
+      return res.status(403).json({ error: 'Not authorized to view this course' });
+    }
     const chapters = db.prepare('SELECT * FROM chapters WHERE course_id = ? ORDER BY order_index').all(course_id);
     const lessons = db.prepare('SELECT * FROM lessons WHERE course_id = ? ORDER BY order_index').all(course_id);
     const result = chapters.map(ch => ({

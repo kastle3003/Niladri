@@ -31,7 +31,7 @@
       --max:          1280px;
     }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: clip; }
     body {
       background: var(--ink);
       color: var(--cream);
@@ -201,111 +201,213 @@
     .outcome-item svg { width: 16px; height: 16px; stroke: var(--gold); fill: none; stroke-width: 2.5; flex-shrink: 0; margin-top: 1px; }
 
     /* ─── CURRICULUM ─── */
+    /* Full-bleed: anchor the section's left edge to viewport x=0 regardless
+       of how far right .page-main's content column is pushed by the 380px
+       sticky pricing sidebar. The min() picks whichever of the two values
+       is more negative, giving the correct margin at every viewport width:
+         • 900px ≤ vw ≤ 1280px  →  content_left = 80px, so margin -80px wins
+         • vw > 1280px          →  content_left grows as page-wrap centers,
+                                    so calc(-50vw + 560px) wins
+       (50vw − 560 equals 80 at vw=1280 and 400 at vw=1920 — the exact
+       horizontal distance from content column to viewport left.) */
+    .curriculum-section {
+      width: 100vw;
+      margin-left: min(-80px, calc(-50vw + 560px));
+      padding: 0 48px;
+      box-sizing: border-box;
+    }
+    .curriculum-section .section-heading { margin-top: 6px; }
+    .curriculum-section .foundation-tabs { padding-top: 4px; }
+    @media (max-width: 900px) {
+      /* Mobile: no sidebar, normal single-column flow */
+      .curriculum-section {
+        width: 100%;
+        margin-left: 0;
+        padding: 0 24px;
+      }
+    }
     .curriculum-summary {
       display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap;
     }
     .curr-stat { font-size: 13px; color: var(--cream-dim); }
     .curr-stat strong { color: var(--cream); font-weight: 500; }
-    .chapter {
+
+    .foundation-tabs {
+      display: flex; gap: 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+    .foundation-tab {
+      background: none; border: 0;
+      padding: 12px 20px;
+      color: var(--cream-dim);
+      font-family: inherit;
+      font-size: 13px; font-weight: 500; letter-spacing: .02em;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+      white-space: nowrap;
+    }
+    .foundation-tab:hover { color: var(--cream); }
+    .foundation-tab.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    .foundation-body {
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) 2.6fr;
+      gap: 24px;
+    }
+    @media (max-width: 860px) { .foundation-body { grid-template-columns: 1fr; } }
+
+    .foundation-lessons {
+      background: var(--ghost);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+    }
+    .lesson-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+    .lesson-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      font-size: 13px; color: var(--cream-dim);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background .15s, color .15s;
+      user-select: none;
+    }
+    .lesson-item:hover { background: var(--ghost-mid); color: var(--cream); }
+    .lesson-item.selected {
+      background: rgba(200,168,75,.1);
+      color: var(--cream);
+    }
+    .lesson-item.locked { opacity: .75; }
+    .lesson-item .l-num { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--gold-dim); min-width: 18px; }
+    .lesson-item .l-icon { width: 18px; height: 18px; color: var(--gold); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .lesson-item .l-icon svg { width: 14px; height: 14px; stroke: currentColor; fill: currentColor; }
+    .lesson-item.locked .l-icon { color: var(--cream-dim); }
+    .lesson-item.locked .l-icon svg { fill: none; stroke-width: 2; }
+    .lesson-item.selected .l-icon { color: var(--gold-bright, #E8C96E); }
+    .lesson-item .l-name { flex: 1; }
+    .lesson-item .l-dur { font-size: 11px; color: var(--cream-dim); font-variant-numeric: tabular-nums; }
+
+    .foundation-player {
+      background: var(--ghost);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
-      margin-bottom: 8px;
+      display: flex; flex-direction: column;
+      position: relative;
     }
-    .chapter-header {
-      display: flex; align-items: center; gap: 16px;
-      padding: 18px 22px;
-      background: var(--ghost);
+    .video-expand-btn {
+      position: absolute;
+      top: 10px; right: 10px; z-index: 4;
+      width: 34px; height: 34px;
+      background: rgba(0,0,0,.55);
+      border: 1px solid rgba(255,255,255,.2);
+      color: var(--cream);
+      border-radius: 3px;
       cursor: pointer;
-      transition: background .2s;
-      user-select: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, border-color .15s;
     }
-    .chapter-header:hover { background: var(--ghost-mid); }
-    .chapter-num {
-      font-family: var(--font-display); font-size: 28px; font-weight: 300;
-      color: var(--gold-dim); line-height: 1; flex-shrink: 0; width: 32px;
-    }
-    .chapter-info { flex: 1; }
-    .chapter-title { font-size: 14px; font-weight: 500; color: var(--cream); }
-    .chapter-meta { font-size: 12px; color: var(--cream-dim); margin-top: 2px; }
-    .chapter-toggle { width: 18px; height: 18px; flex-shrink: 0; color: var(--cream-dim); transition: transform .3s; }
-    .chapter-toggle svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; }
-    .chapter.open .chapter-toggle { transform: rotate(180deg); }
-    .chapter-lessons { display: none; border-top: 1px solid var(--border); }
-    .chapter.open .chapter-lessons { display: block; }
-    .lesson-row {
-      display: flex; align-items: center; gap: 14px;
-      padding: 13px 22px 13px 70px;
-      border-bottom: 1px solid rgba(200,168,75,.07);
-      font-size: 13px; color: var(--cream-dim);
-      transition: background .15s;
-    }
-    .lesson-row:last-child { border-bottom: none; }
-    .lesson-row:hover { background: var(--ghost); color: var(--cream); }
-    .lesson-type-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--ghost-mid); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .lesson-type-icon svg { width: 12px; height: 12px; stroke: var(--gold-dim); fill: none; stroke-width: 2; }
-    .lesson-name { flex: 1; }
-    .lesson-lock { width: 14px; height: 14px; color: var(--gold-dim); }
-    .lesson-lock svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; }
-    .lesson-dur { font-size: 11px; color: var(--cream-dim); min-width: 36px; text-align: right; }
-    .preview-tag {
-      font-size: 10px; color: var(--gold); letter-spacing: .1em; text-transform: uppercase;
-      border: 1px solid var(--gold); padding: 2px 6px; border-radius: 3px;
-    }
-    .preview-btn {
-      font-size: 10px; font-weight: 600; color: var(--ink, #0F0D0B); background: var(--gold);
-      letter-spacing: .08em; text-transform: uppercase;
-      padding: 4px 10px; border-radius: 3px;
-      transition: background .15s;
-    }
-    .lesson-previewable:hover .preview-btn { background: var(--gold-bright, #E8C96E); }
+    .video-expand-btn:hover { background: rgba(200,168,75,.35); border-color: var(--gold); }
+    .video-expand-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
 
-    /* ─── PREVIEW MODAL ─── */
-    .preview-modal-backdrop {
-      position: fixed; inset: 0; z-index: 10000;
-      background: rgba(8,7,6,0.92);
-      display: none; align-items: center; justify-content: center;
-      padding: 32px;
-    }
-    .preview-modal-backdrop.open { display: flex; }
-    .preview-modal {
-      width: min(1000px, 100%); max-height: 92vh;
-      background: #111; border: 1px solid var(--border);
-      border-radius: var(--radius); overflow: hidden;
+    /* ─── Theater / Full-viewport mode ─── */
+    .curriculum-section.theater {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--bg, #0b0a08);
+      padding: 24px 32px;
+      margin: 0;
+      overflow-y: auto;
       display: flex; flex-direction: column;
     }
-    .preview-modal-head {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 20px; background: #1a1815; border-bottom: 1px solid var(--border);
+    .curriculum-section.theater .section-label,
+    .curriculum-section.theater .section-heading,
+    .curriculum-section.theater .curriculum-summary { display: none; }
+    .curriculum-section.theater .foundation-tabs { margin-bottom: 16px; flex-shrink: 0; }
+    .curriculum-section.theater .foundation-body {
+      grid-template-columns: 320px 1fr;
+      flex: 1;
+      min-height: 0;
     }
-    .preview-modal-title {
-      font-family: var(--font-display); font-size: 18px; font-weight: 600;
-      color: var(--cream);
+    .curriculum-section.theater .foundation-lessons { overflow-y: auto; max-height: 100%; }
+    .curriculum-section.theater .foundation-player { height: 100%; }
+    .curriculum-section.theater .video-slot { aspect-ratio: auto; flex: 1; }
+    body.curriculum-theater-on { overflow: hidden; }
+    @media (max-width: 860px) {
+      .curriculum-section.theater .foundation-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
     }
-    .preview-modal-close {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: none; border: 1px solid var(--border); color: var(--cream-dim);
-      font-size: 16px; cursor: pointer; transition: all .15s;
+    .video-slot {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      overflow: hidden;
     }
-    .preview-modal-close:hover { color: var(--cream); border-color: var(--gold); }
-    .preview-modal-body {
-      position: relative; background: #000;
-      aspect-ratio: 16/9;
+    .video-slot video, .video-slot iframe {
+      position: absolute; inset: 0; width: 100%; height: 100%; display: block; border: 0;
     }
-    .preview-modal-body iframe, .preview-modal-body video {
-      position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+    .video-slot video { background: #000; }
+    .video-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      transition: opacity .25s;
     }
-    .preview-modal-foot {
-      padding: 16px 20px; font-size: 12px; color: var(--cream-dim);
-      display: flex; justify-content: space-between; gap: 16px; align-items: center;
+    .video-play-btn {
+      pointer-events: auto;
+      width: 68px; height: 68px; border-radius: 50%;
+      background: rgba(200,168,75,.95); color: #0F0D0B;
+      border: 0; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s, background .15s;
+    }
+    .video-play-btn:hover { transform: scale(1.06); background: var(--gold-bright, #E8C96E); }
+    .video-play-btn svg { width: 28px; height: 28px; fill: currentColor; }
+    .video-slot.playing .video-overlay { opacity: 0; }
+    .video-slot.playing:hover .video-overlay { opacity: 1; }
+
+    .video-progress-bar {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+      background: rgba(255,255,255,.12);
+      pointer-events: none;
+    }
+    .video-progress-fill {
+      height: 100%; background: var(--gold);
+      width: 0%;
+    }
+
+    .video-title-row {
+      padding: 12px 16px;
+      font-size: 13px; color: var(--cream);
       border-top: 1px solid var(--border);
+      background: var(--ghost-mid);
+      min-height: 42px;
     }
-    .preview-modal-foot a {
+
+    .video-locked {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--cream-dim); padding: 24px; text-align: center;
+      background: #0a0907;
+    }
+    .video-locked svg { width: 36px; height: 36px; color: var(--gold-dim); margin-bottom: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .video-locked h3 { font-family: var(--font-display); font-size: 20px; color: var(--cream); margin: 0 0 6px; }
+    .video-locked p { font-size: 13px; margin: 0 0 14px; max-width: 340px; }
+    .video-locked .cta-row { display: flex; gap: 10px; }
+    .video-locked a {
       background: var(--gold); color: #0F0D0B;
-      padding: 8px 16px; border-radius: 3px; font-weight: 600;
+      padding: 9px 18px; border-radius: 3px; font-weight: 600;
       text-decoration: none; font-size: 12px; letter-spacing: .05em;
+      transition: background .15s;
     }
-    .preview-modal-foot a:hover { background: var(--gold-bright, #E8C96E); }
+    .video-locked a.outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 8px 17px; }
+    .video-locked a:hover { background: var(--gold-bright, #E8C96E); color: #0F0D0B; }
+    .video-locked a.outline:hover { background: var(--gold); color: #0F0D0B; }
 
     /* ─── INSTRUCTOR ─── */
     .instructor-card-pub {
@@ -685,45 +787,29 @@ async function renderPage(data) {
         <hr class="section-sep">
 
         <!-- CURRICULUM -->
-        <div class="section reveal">
+        <div class="section reveal curriculum-section">
           <p class="section-label">Curriculum</p>
+          <div class="foundation-tabs" id="foundation-tabs" role="tablist">
+            ${chapters.map((ch, i) => `
+              <button class="foundation-tab${i === 0 ? ' active' : ''}" data-ch="${ch.id}" onclick="selectFoundation('${ch.id}')" role="tab">${ch.title}</button>
+            `).join('')}
+          </div>
           <h2 class="section-heading">Course <em>structure</em></h2>
           <div class="curriculum-summary">
-            <span class="curr-stat"><strong>${chapters.length}</strong> chapters</span>
             <span class="curr-stat"><strong>${totalLessons}</strong> lessons</span>
             <span class="curr-stat"><strong>${fmtDur(totalMinutes)}</strong> total runtime</span>
           </div>
-          <div id="chapters-list">
-            ${chapters.map((ch, idx) => `
-              <div class="chapter${idx === 0 ? ' open' : ''}" id="ch-${ch.id}">
-                <div class="chapter-header" onclick="toggleChapter('ch-${ch.id}')">
-                  <span class="chapter-num">${String(idx + 1).padStart(2, '0')}</span>
-                  <div class="chapter-info">
-                    <div class="chapter-title">${ch.title}</div>
-                    <div class="chapter-meta">${ch.lessons.length} lesson${ch.lessons.length !== 1 ? 's' : ''}${ch.description ? ' · ' + ch.description : ''}</div>
-                  </div>
-                  <span class="chapter-toggle"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
-                </div>
-                <div class="chapter-lessons">
-                  ${ch.lessons.map((l, li) => {
-                    const videoMat = (l.materials || []).find(m => m.type === 'video' && m.url);
-                    const canPreview = l.is_preview && videoMat;
-                    return `
-                    <div class="lesson-row${canPreview ? ' lesson-previewable' : ''}"
-                         ${canPreview ? `onclick="openPreview(${l.id})"` : ''}
-                         ${canPreview ? 'style="cursor:pointer;"' : ''}>
-                      <div class="lesson-type-icon">${lessonIcon(l.type)}</div>
-                      <span class="lesson-name">${l.title}</span>
-                      ${l.is_preview
-                        ? (canPreview
-                            ? '<span class="preview-btn">▶ Watch Free Preview</span>'
-                            : '<span class="preview-tag">Free Preview</span>')
-                        : '<span class="lesson-lock"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>'}
-                      ${l.duration_minutes ? `<span class="lesson-dur">${fmtDur(l.duration_minutes)}</span>` : ''}
-                    </div>`;
-                  }).join('')}
-                </div>
-              </div>`).join('')}
+          <div class="foundation-body">
+            <div class="foundation-lessons">
+              <ol class="lesson-list" id="foundation-lesson-list"></ol>
+            </div>
+            <div class="foundation-player">
+              <button class="video-expand-btn" id="video-expand-btn" onclick="toggleCurriculumTheater()" aria-label="Expand" title="Expand to full-size">
+                <svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              </button>
+              <div class="video-slot" id="video-slot"></div>
+              <div class="video-title-row" id="video-title">Select a lesson to preview</div>
+            </div>
           </div>
         </div>
 
@@ -844,12 +930,6 @@ async function renderPage(data) {
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 }
 
-// ─── Chapter accordion ───────────────────────────────────────────────────────
-function toggleChapter(id) {
-  const ch = document.getElementById(id);
-  ch.classList.toggle('open');
-}
-
 // ─── INIT ────────────────────────────────────────────────────────────────────
 (async () => {
   if (!courseId) return;
@@ -870,68 +950,186 @@ function toggleChapter(id) {
   }
 })();
 
-// ─── PREVIEW PLAYER ──────────────────────────────────────────────────────────
-// The public /api/public/courses/:slug response embeds materials for preview
-// lessons only. We find the clicked lesson, locate its first video material,
-// and render it in an embedded modal. Works for YouTube (iframe) and raw MP4
-// (<video> tag). Closing the modal stops the player by clearing the src.
+// ─── CURRICULUM: FOUNDATION TABS + INLINE PLAYER ─────────────────────────────
+// Replaces the old accordion + modal popup. Lessons render on the left, the
+// selected lesson's video plays in the embedded player on the right. Video
+// controls are custom (play/pause + visual-only progress bar) — no seeker,
+// no keyboard seeking, no right-click menu.
 let _landingData = null;
-const _origRender = renderPage;
+const _origRenderForFoundations = renderPage;
 renderPage = async function patched(data) {
   _landingData = data;
-  return _origRender.call(this, data);
+  const out = await _origRenderForFoundations.call(this, data);
+  // Initialize first foundation after DOM is rendered
+  if ((data.chapters || []).length) {
+    selectFoundation(data.chapters[0].id, /*autoLoadVideo*/ true);
+  }
+  return out;
 };
 
-function openPreview(lessonId) {
-  if (!_landingData) return;
-  let lesson = null;
-  for (const ch of (_landingData.chapters || [])) {
-    const hit = (ch.lessons || []).find(l => l.id === lessonId);
-    if (hit) { lesson = hit; break; }
+function _playIconSvg() {
+  return '<svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg>';
+}
+function _lockIconSvg() {
+  return '<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
+}
+
+function selectFoundation(chId, autoLoadVideo) {
+  document.querySelectorAll('.foundation-tab').forEach(b =>
+    b.classList.toggle('active', String(b.dataset.ch) === String(chId))
+  );
+  renderLessonList(chId);
+  if (autoLoadVideo) {
+    const first = _findFirstPlayable(chId);
+    if (first) {
+      _loadLessonIntoPlayer(first, /*autoplay*/ false);
+      _markSelectedLesson(chId, first.id);
+    } else {
+      _showLockedPlayer('No free preview in this foundation');
+    }
   }
+}
+
+function _findFirstPlayable(chId) {
+  const ch = (_landingData.chapters || []).find(c => String(c.id) === String(chId));
+  if (!ch) return null;
+  return (ch.lessons || []).find(l =>
+    l.is_preview && (l.materials || []).some(m => m.type === 'video' && m.url)
+  ) || null;
+}
+
+function renderLessonList(chId) {
+  const ch = (_landingData.chapters || []).find(c => String(c.id) === String(chId));
+  const list = document.getElementById('foundation-lesson-list');
+  if (!list) return;
+  if (!ch || !(ch.lessons || []).length) {
+    list.innerHTML = '<li class="lesson-item locked" style="cursor:default;"><span class="l-name" style="color:var(--cream-dim);">No lessons in this foundation yet.</span></li>';
+    return;
+  }
+  list.innerHTML = (ch.lessons || []).map((l, i) => {
+    const video = (l.materials || []).find(m => m.type === 'video' && m.url);
+    const playable = l.is_preview && video;
+    const click = playable
+      ? `onclick="selectLesson('${ch.id}', ${l.id})"`
+      : `onclick="_showLockedPlayer(this.dataset.title)"`;
+    return `<li class="lesson-item${playable ? '' : ' locked'}" data-lesson="${l.id}" data-title="${(l.title || '').replace(/"/g,'&quot;')}" ${click}>
+      <span class="l-num">${i + 1}</span>
+      <span class="l-icon">${playable ? _playIconSvg() : _lockIconSvg()}</span>
+      <span class="l-name">${l.title || ''}</span>
+      <span class="l-dur">${l.duration_minutes ? fmtDur(l.duration_minutes) : ''}</span>
+    </li>`;
+  }).join('');
+}
+
+function _markSelectedLesson(chId, lessonId) {
+  document.querySelectorAll('#foundation-lesson-list .lesson-item').forEach(li =>
+    li.classList.toggle('selected', String(li.dataset.lesson) === String(lessonId))
+  );
+}
+
+function selectLesson(chId, lessonId) {
+  const ch = (_landingData.chapters || []).find(c => String(c.id) === String(chId));
+  const lesson = ch && (ch.lessons || []).find(l => l.id === lessonId);
   if (!lesson) return;
+  _markSelectedLesson(chId, lessonId);
+  _loadLessonIntoPlayer(lesson, /*autoplay*/ true);
+}
+
+function _loadLessonIntoPlayer(lesson, autoplay) {
+  const slot = document.getElementById('video-slot');
+  const titleEl = document.getElementById('video-title');
   const vid = (lesson.materials || []).find(m => m.type === 'video' && m.url);
-  if (!vid) { alert('Preview video not available.'); return; }
+  if (!vid) { _showLockedPlayer(lesson.title); return; }
 
-  const isYT = /youtube\.com|youtu\.be/i.test(vid.url);
-  const embed = isYT ? toEmbed(vid.url) : vid.url;
-  const player = isYT
-    ? `<iframe src="${embed}?autoplay=1" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
-    : `<video src="${vid.url}" controls autoplay></video>`;
+  const url = vid.url;
+  const isIframeHost = /youtube\.com|youtu\.be|vimeo\.com/i.test(url);
+  slot.classList.remove('playing');
 
-  document.getElementById('preview-modal-title').textContent = lesson.title;
-  document.getElementById('preview-modal-body').innerHTML = player;
-  document.getElementById('preview-modal-backdrop').classList.add('open');
+  if (isIframeHost) {
+    const embed = _toEmbed(url);
+    const sep = embed.includes('?') ? '&' : '?';
+    slot.innerHTML = `<iframe src="${embed}${autoplay ? sep + 'autoplay=1' : ''}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+  } else {
+    // HTML5 video with custom no-seeker controls
+    slot.innerHTML = `
+      <video preload="auto" playsinline oncontextmenu="return false;" src="${url}"></video>
+      <div class="video-overlay">
+        <button class="video-play-btn" aria-label="Play" type="button">${_playIconSvg()}</button>
+      </div>
+      <div class="video-progress-bar"><div class="video-progress-fill" id="video-progress-fill"></div></div>
+    `;
+    const v = slot.querySelector('video');
+    const btn = slot.querySelector('.video-play-btn');
+    const fill = slot.querySelector('.video-progress-fill');
+    const toggle = () => { if (v.paused) v.play().catch(()=>{}); else v.pause(); };
+    btn.addEventListener('click', toggle);
+    v.addEventListener('click', toggle);
+    v.addEventListener('play', () => slot.classList.add('playing'));
+    v.addEventListener('pause', () => slot.classList.remove('playing'));
+    v.addEventListener('ended', () => slot.classList.remove('playing'));
+    // Visual-only progress
+    v.addEventListener('timeupdate', () => {
+      if (v.duration) fill.style.width = ((v.currentTime / v.duration) * 100) + '%';
+    });
+    // Anti-scrub: if any code tries to seek, snap back. (UI exposes no seek path,
+    // but this blocks keyboard shortcuts and programmatic seeks.)
+    let _lastT = 0;
+    v.addEventListener('timeupdate', () => { _lastT = v.currentTime; });
+    v.addEventListener('seeking', () => {
+      if (Math.abs(v.currentTime - _lastT) > 1.25) {
+        v.currentTime = _lastT;
+      }
+    });
+    if (autoplay) v.play().catch(() => {});
+  }
+  titleEl.textContent = lesson.title || '';
 }
 
-function closePreview() {
-  document.getElementById('preview-modal-body').innerHTML = '';
-  document.getElementById('preview-modal-backdrop').classList.remove('open');
+function _showLockedPlayer(title) {
+  const slot = document.getElementById('video-slot');
+  const titleEl = document.getElementById('video-title');
+  slot.classList.remove('playing');
+  slot.innerHTML = `
+    <div class="video-locked">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      <h3>${title || 'This lesson is locked'}</h3>
+      <p>Sign in or join now to access all lessons in this course.</p>
+      <div class="cta-row">
+        <a class="outline" href="/index.html">Sign In</a>
+        <a href="#" onclick="const b=document.querySelector('.enroll-trigger'); if(b){b.click(); return false;}">Join Now</a>
+      </div>
+    </div>
+  `;
+  titleEl.textContent = '';
 }
 
-function toEmbed(url) {
+function _toEmbed(url) {
   const id = (url.match(/youtu\.be\/([\w-]+)/) || [])[1]
           || (url.match(/[?&]v=([\w-]+)/) || [])[1]
           || (url.match(/youtube\.com\/embed\/([\w-]+)/) || [])[1];
   return id ? `https://www.youtube.com/embed/${id}` : url;
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview(); });
-</script>
+function toggleCurriculumTheater() {
+  const section = document.querySelector('.curriculum-section');
+  if (!section) return;
+  const on = section.classList.toggle('theater');
+  document.body.classList.toggle('curriculum-theater-on', on);
+  const btn = document.getElementById('video-expand-btn');
+  if (btn) {
+    btn.setAttribute('aria-label', on ? 'Shrink' : 'Expand');
+    btn.setAttribute('title', on ? 'Exit full-size (Esc)' : 'Expand to full-size');
+    btn.innerHTML = on
+      ? '<svg viewBox="0 0 24 24"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>'
+      : '<svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+  }
+}
 
-<!-- Preview player modal -->
-<div class="preview-modal-backdrop" id="preview-modal-backdrop" onclick="if(event.target.id==='preview-modal-backdrop')closePreview()">
-  <div class="preview-modal">
-    <div class="preview-modal-head">
-      <div class="preview-modal-title" id="preview-modal-title">Preview</div>
-      <button class="preview-modal-close" onclick="closePreview()" aria-label="Close">✕</button>
-    </div>
-    <div class="preview-modal-body" id="preview-modal-body"></div>
-    <div class="preview-modal-foot">
-      <span>Enjoying this? Enrol to unlock the full course.</span>
-      <a href="#" onclick="closePreview(); const b=document.querySelector('.enroll-trigger'); if(b) b.click();">Enrol Now</a>
-    </div>
-  </div>
-</div>
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const section = document.querySelector('.curriculum-section');
+  if (section && section.classList.contains('theater')) toggleCurriculumTheater();
+});
+</script>
 </body>
 </html>
